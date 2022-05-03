@@ -96,19 +96,156 @@ p_2 &= b_2 - \mcbox{\inner{\vec{a}_2}{\vec{s}}}   \\
 \end{aligned}
 $$
 
-where the value of entires in the color box are not known. However, this means that
+where the value of entires in the color box are not known. For
+$\eval_\times$ to exist and the resulting ciphertext to remain
+_decryptable_, its crucial that $p_1\cdot p_2$ can be written in a
+form such that the secret-key and the ciphertext are not
+"intertwined," i.e., $p_1\cdot p_2$ must be express-able as
+
+$$
+  \begin{equation}
+p_1\cdot p_2 = g(\eval_\times(\vec{a}_1,\vec{a}_2, b_1, b_2),
+\mcbox{\alpha(\vec{s})}).
+  \label{fhe-form-tensors:clean-form}
+  \end{equation}
+$$
+
+This is because, $\eval_\times$ does not have access to $\vec{s}$,
+so cannot depend on it. On the other hand, $\alpha(\cdot)$ cannot
+depend on the ciphertext (i.e., $\vec{a}_1, \vec{a}_2, b_1, b_2$)
+because $\vec{a}_1, \vec{a}_2, b_1, b_2$ might be an intermediate
+value that never makes it directly to the output (e.g., the carry
+bit in addition), so _compactness_ demands that $\alpha$ can at
+most depend on $\vec{s}$.
+
+In the present case, then
 
 $$
 \begin{aligned}
-p_1\cdot p_2 &= (b_1 - \inner{\vec{a}_1}{\vec{s}})\times (b_2 - \inner{\vec{a}_2}{\vec{s}}) \\
-             &= b_1b_2 - \mcbox{b_1\inner{\vec{a}_2}{\vec{s}} - b_2\inner{\vec{a}_1}{\vec{s}} + \inner{\vec{a}_1}{\vec{s}}\inner{\vec{a}_2}{\vec{s}}}
+p_1\cdot p_2 &= (b_1 - \inner{\vec{a}_1}{\vec{s}})\times (b_2 -
+\inner{\vec{a}_2}{\vec{s}}) &  \\
+             &= \left (\inner{b_1 \concat 0..0 }{1 \concat \vec{s}} -
+                       \inner{0 \concat {\vec{a}_1}}{1 \concat \vec{s}}
+                \right ) \\
+             &\quad\quad\times \left ( \inner{b_2 \concat 0..0}{1 \concat \vec{s}} -
+                                       \inner{0 \concat {\vec{a}_2}}{1 \concat \vec{s}}
+                                \right ) & \\
+             &= \inner{b_1 \concat 0..0 - 0 \concat {\vec{a}_1}}{1 \concat \vec{s}}
+                \inner{b_2 \concat 0..0 - 0 \concat {\vec{a}_2}}{1 \concat \vec{s}} & (\text{bi-linearity})\\
+             &= \inner{b_1 \concat {-\vec{a}_1}}{1 \concat \vec{s}}
+                \inner{b_2 \concat {-\vec{a}_2}}{1 \concat \vec{s}} & \\
 \end{aligned}
 $$
 
+where $\concat$ means concatenation and $0..0$ represents a vector
+of as many zeros as needed to fulfil dimension requirements. If we
+write $\vec{c}_i = b_i \concat {-\vec{a_i}}$ and $\bar{\vec{s}} =
+1\concat \vec{s}$, then $p_1\cdot p_2 =
+\inner{\vec{c}_1}{\bar{\vec{s}}} \cdot
+\inner{\vec{c}_2}{\bar{\vec{s}}}$. Question is, can $p_1\cdot p_2$
+be written in the form of $g(\eval_\times(\vec{a}_1,\vec{a}_2, b_1,
+b_2), \alpha({\vec{s})})$ satisfying the requirements described in
+Equation-$\ref{fhe-form-tensors:clean-form}$? Thanks to the
+bi-linearity of inner product and [universal mapping
+property](https://kconrad.math.uconn.edu/blurbs/linmultialg/tensorprod.pdf)
+of tensor products, the answer is yes!
 
-[^BV11]: Z. Brakerski and V. Vaikuntanathan, [Efficient Fully Homomorphic Encryption from (Standard) LWE
-](https://eprint.iacr.org/2011/344.pdf). In 2011 IEEE 52nd Annual Symposium on Foundations of Computer Science, 2011, pp. 97-106, doi: 10.1109/FOCS.2011.12.
+Recall, that since inner product is a linear functional,
 
-[^Gen09]: C. Gentry, [Fully homomorphic encryption using ideal lattices](https://www.cs.cmu.edu/~odonnell/hits09/gentry-homomorphic-encryption.pdf). In the Proceedings of the 41st ACM Symposium on Theory of Computing – STOC 2009, pp. 169–178. ACM, New York (2009)
+$$
+\begin{aligned}
+p_1\cdot p_2 &= \inner{\vec{c}_1}{\bar{\vec{s}}}\cdot\inner{\vec{c}_1}{\bar{\vec{s}}} \\
+ &= \inner{\vec{c}_1\otimes_{\ZZ}\vec{c}_2} {\bar{\vec{s}}\otimes_{\ZZ} \bar{\vec{s}}}
+\end{aligned}
+$$
 
-[^Reg05]: O. Regev, [On lattices, learning with errors, random linear codes, and cryptography](https://cims.nyu.edu/~regev/papers/lwesurvey.pdf). In Proceedings of the 37th Annual ACM Symposium on Theory of Computing, Baltimore, MD, USA, May 22-24, 2005. pp. 84–93.
+therefore, if $g := \inner{\cdot}{\cdot}$ is the inner product,
+$\eval_\times(\vec{c}_1, \vec{c}_2) := \vec{c}_1\otimes\vec{c}_2$
+the tensor product of ciphertext, and $\alpha(\vec{s}) :=
+\bar{\vec{s}}\otimes \bar{\vec{s}}$ the tensor product of secret key
+pre-pended with $1$, then the constraints of
+Equation-$\ref{fhe-form-tensors:clean-form}$ are satisfied and
+multiplication can be defined on the ciphertext.
+
+To make these ideals concrete, we consider a toy example:
+
+??? "Example $\eval_+, \eval_\times$"
+
+    \( \def\lift{\mathsterling} \)
+    Support $p_1 = 1$ and $p_2 = 0$ and we want to compute $\vec{c}_1 = \enc(p_1), \vec{c}_2 = \enc(p_2)$, and homomorphically evaluate $\vec{c}_3 := \vec{c}_1 + \vec{c}_2 = eval_+(\vec{c}_1, \vec{c}_2)$ and $\vec{c}_4 := \vec{c}_1\times \vec{c}_2 = \eval_\times(\vec{c}_1, \vec{c}_2)$.
+
+    We will work in the Ring-LWE settings. Let $R = \mathbb{Z}[X]/\langle X^4 + 1\rangle$, $q=7$ and therefore $R_q = \Fq[Y]/\langle Y^4 + 1\rangle$, where $Y$ is the image of $X$ in $R_q$, i.e., $Y = X\quad\text{mod}\, q$. We will use one-dimensional vectors since we are in the Ring-LWE setting.
+
+    In order to encrypt in the current simplified Regev encryption setting, we randomly chose $\vec{a}_1 := [6Y^3+Y^2+3Y+5]$, $\vec{a}_2 := [Y^3+4Y^2+3]$ and $\vec{s} := [5Y^3+3Y^2+2Y+1]$, where $\vec{a}_1, \vec{a}_2, \vec{s} \in \left(\ZZ[X]/\langle X^4 + 1, 7\rangle \right)^1 \cong \left (\F{7}[Y]/\langle Y^4 + 1 \rangle \right)^1$.
+
+    Recall that an element $\bar{x} \in \Fq$ is an equivalence class that represents the set \( \{\bar{x} + q\ZZ \} \). For example, \( \bar{3} \in \F{q} \) represents the entire set \( \{3, 3 +7, \cdots, 3 + 7\ZZ\} \) (because of abuse of notation, $\bar{3}$ is usually just written $3$). For correct decryption as well as for complexity analysis, we need to select a unique representation for elements in $\F{q}$. Therefore, we first define a _cannonical lift_ of elements in $\F{7}[Y]/\langle Y^4 + 1 \rangle$ to elements of $\ZZ[X]/\langle X^4 + 1\rangle$ as follows:
+
+    $$
+      \begin{aligned}
+        \lift : R_q &\rightarrow R\\
+        \lift \left(\sum a_i Y^ i \right ) &= \sum_i [a_i]_q X^ i;
+      \end{aligned}
+    $$
+
+    where $[a]_q$, is **an integer** corresponding to $a \in \F{q}$, such that $-q/2 \leq  [a]_q < q/2$ and $[a]_q\,(\text{mod}\, q) = a$. Therefore, $\lift(\vec{a}_1)$ := $\lift(6Y^3+Y^2+3Y+5)$ = $-X^3+X^2+3X-2 \in \ZZ[X]/\langle X^4 + 1\rangle$, since $[6]_7 = -1, [1]_7 = 1, [3]_7=3,$ and $[5]_7 = -2$. Note that $\lift(\cdot)$ is *not a ring homomorphism*! We also define the lift of a vector as a vector of the lifts of its elements, i.e., $\lift([x_1, \cdots, x_n]) := [\lift(x_1), \cdots, \lift(x_n)]$.
+
+    Lifting rest of the elements, we get
+
+    $$
+      \begin{aligned}
+      \lift([\vec{a}_1]) &= [-X^3+X^2+3X-2] \\
+      \lift([\vec{a}_2]) &= [X^3-3X^2+3] \\
+      \lift([\vec{s}])   &= [-2X^3+3X^2+2X+1]
+      \end{aligned}
+    $$
+
+    To compute cipher text, we first compute, $b_i$s as
+
+    $$
+    \begin{aligned}
+    b_1 &= \lift(\inner{\vec{a}_1}{\vec{s}}) + p1 \\
+              &= \lift(6Y^2 + 4Y + 3) + 1 = -X^2 -3X + 4 \\
+              & \text{and} \\
+    b_2 &= \lift(\inner{\vec{a}_2}{\vec{s}}) + p2 \\
+              &= \lift(3Y^3 + Y^2 + 4Y + 3) + 0 = 3X^3 + X^2 - 3X + 3\\
+    \end{aligned}
+    $$
+
+    Therefore the ciphertexts are
+
+    $$
+      \begin{aligned}
+      \vec{c}_1 &:= [b_1 \concat -\vec{a}_1] = [-X^2 -3X + 4, X^3-X^2-3X+2] \\
+      \vec{c}_2 &:= [b_2 \concat -\vec{a}_2] = [3X^3 + X^2 - 3X + 3, -X^3+3X^2-3]\quad
+      \text{and} \\
+      \bar{\vec{s}} &:= [ 1 \concat \vec{s}] = [1, -2X^3+3X^2+2X+1]
+      \end{aligned}
+    $$
+
+    and as a check we can verify that $\inner{\vec{c}_1}{\bar{\vec{s}}} = -14*X^3 - 7*X + 1 \cong (1 \mod 7) = p_1$.
+
+    #### Ciphertext Addition
+    As discussed before, just adding the vectos $\vec{c}_1$
+
+
+
+## Relinearlization
+
+## Noise Management
+
+[^BV11]: Z. Brakerski and V. Vaikuntanathan, [Efficient Fully
+Homomorphic Encryption from (Standard) LWE
+](https://eprint.iacr.org/2011/344.pdf). In 2011 IEEE 52nd Annual
+Symposium on Foundations of Computer Science, 2011, pp. 97-106, doi:
+10.1109/FOCS.2011.12.
+
+[^Gen09]: C. Gentry, [Fully homomorphic encryption using ideal
+    lattices](https://www.cs.cmu.edu/~odonnell/hits09/gentry-homomorphic-encryption.pdf).
+    In the Proceedings of the 41st ACM Symposium on Theory of
+    Computing – STOC 2009, pp. 169–178. ACM, New York (2009)
+
+[^Reg05]: O. Regev, [On lattices, learning with errors, random
+    linear codes, and
+    cryptography](https://cims.nyu.edu/~regev/papers/lwesurvey.pdf).
+    In Proceedings of the 37th Annual ACM Symposium on Theory of
+    Computing, Baltimore, MD, USA, May 22-24, 2005. pp. 84–93.
