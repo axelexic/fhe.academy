@@ -174,40 +174,18 @@ To make these ideals concrete, we consider a toy example:
     \( \def\lift{\mathsterling} \)
     Support $p_1 = 1$ and $p_2 = 0$ and we want to compute $\vec{c}_1 = \enc(p_1), \vec{c}_2 = \enc(p_2)$, and homomorphically evaluate $\vec{c}_3 := \vec{c}_1 + \vec{c}_2 = eval_+(\vec{c}_1, \vec{c}_2)$ and $\vec{c}_4 := \vec{c}_1\times \vec{c}_2 = \eval_\times(\vec{c}_1, \vec{c}_2)$.
 
-    We will work in the Ring-LWE settings. Let $R = \mathbb{Z}[X]/\langle X^4 + 1\rangle$, $q=7$ and therefore $R_q = \Fq[Y]/\langle Y^4 + 1\rangle$, where $Y$ is the image of $X$ in $R_q$, i.e., $Y = X\quad\text{mod}\, q$. We will use one-dimensional vectors since we are in the Ring-LWE setting.
+    We will work in the Ring-LWE settings. Let $R = \mathbb{Z}[Y]/\langle Y^4 + 1\rangle$, $q=7$ and therefore $R_q = \Fq[X]/\langle X^4 + 1\rangle$, where $X$ is the image of $Y$ in $R_q$, i.e., $X = Y\quad\text{mod}\, q$. We will use one-dimensional vectors since we are in the Ring-LWE setting.
 
-    In order to encrypt in the current simplified Regev encryption setting, we randomly chose $\vec{a}_1 := [6Y^3+Y^2+3Y+5]$, $\vec{a}_2 := [Y^3+4Y^2+3]$ and $\vec{s} := [5Y^3+3Y^2+2Y+1]$, where $\vec{a}_1, \vec{a}_2, \vec{s} \in \left(\ZZ[X]/\langle X^4 + 1, 7\rangle \right)^1 \cong \left (\F{7}[Y]/\langle Y^4 + 1 \rangle \right)^1$.
-
-    Recall that an element $\bar{x} \in \Fq$ is an equivalence class that represents the set \( \{\bar{x} + q\ZZ \} \). For example, \( \bar{3} \in \F{q} \) represents the entire set \( \{3, 3 +7, \cdots, 3 + 7\ZZ\} \) (because of abuse of notation, $\bar{3}$ is usually just written $3$). For correct decryption as well as for complexity analysis, we need to select a unique representation for elements in $\F{q}$. Therefore, we first define a _cannonical lift_ of elements in $\F{7}[Y]/\langle Y^4 + 1 \rangle$ to elements of $\ZZ[X]/\langle X^4 + 1\rangle$ as follows:
-
-    $$
-      \begin{aligned}
-        \lift : R_q &\rightarrow R\\
-        \lift \left(\sum a_i Y^ i \right ) &= \sum_i [a_i]_q X^ i;
-      \end{aligned}
-    $$
-
-    where $[a]_q$, is **an integer** corresponding to $a \in \F{q}$, such that $-q/2 \leq  [a]_q < q/2$ and $[a]_q\,(\text{mod}\, q) = a$. Therefore, $\lift(\vec{a}_1)$ := $\lift(6Y^3+Y^2+3Y+5)$ = $-X^3+X^2+3X-2 \in \ZZ[X]/\langle X^4 + 1\rangle$, since $[6]_7 = -1, [1]_7 = 1, [3]_7=3,$ and $[5]_7 = -2$. Note that $\lift(\cdot)$ is *not a ring homomorphism*! We also define the lift of a vector as a vector of the lifts of its elements, i.e., $\lift([x_1, \cdots, x_n]) := [\lift(x_1), \cdots, \lift(x_n)]$.
-
-    Lifting rest of the elements, we get
-
-    $$
-      \begin{aligned}
-      \lift([\vec{a}_1]) &= [-X^3+X^2+3X-2] \\
-      \lift([\vec{a}_2]) &= [X^3-3X^2+3] \\
-      \lift([\vec{s}])   &= [-2X^3+3X^2+2X+1]
-      \end{aligned}
-    $$
+    In order to encrypt in the current simplified Regev encryption setting, we randomly chose $\vec{a}_1 := [6X^3+X^2+3X+5]$, $\vec{a}_2 := [X^3+4X^2+3]$ and $\vec{s} := [5X^3+3X^2+2X+1]$, where $\vec{a}_1, \vec{a}_2, \vec{s} \in \left (\F{7}[X]/\langle X^4 + 1 \rangle \right)^1$.
 
     To compute cipher text, we first compute, $b_i$s as
 
     $$
     \begin{aligned}
-    b_1 &= \lift(\inner{\vec{a}_1}{\vec{s}}) + p1 \\
-              &= \lift(6Y^2 + 4Y + 3) + 1 = -X^2 -3X + 4 \\
-              & \text{and} \\
-    b_2 &= \lift(\inner{\vec{a}_2}{\vec{s}}) + p2 \\
-              &= \lift(3Y^3 + Y^2 + 4Y + 3) + 0 = 3X^3 + X^2 - 3X + 3\\
+    b_1 &= \inner{\vec{a}_1}{\vec{s}} + p1 \\
+              &= -X^2 -3X + 4,\; \text{and} \\
+    b_2 &= \inner{\vec{a}_2}{\vec{s}} + p2 \\
+              &= 3X^3 + X^2 - 3X + 3\\
     \end{aligned}
     $$
 
@@ -222,12 +200,50 @@ To make these ideals concrete, we consider a toy example:
       \end{aligned}
     $$
 
-    and as a check we can verify that $\inner{\vec{c}_1}{\bar{\vec{s}}} = -14*X^3 - 7*X + 1 \cong (1 \mod 7) = p_1$.
+    and as a check we can verify that $\inner{\vec{c}_1}{\bar{\vec{s}}} = 1 = p_1 \in R_q$.
 
-    #### Ciphertext Addition
-    As discussed before, just adding the vectos $\vec{c}_1$
+    $\mathhdr{\mathbf{\eval_+(\vec{c}_1, \vec{c}_2)}}$
 
+    As discussed before, addition two cipher text is just the addition to two vectors
 
+    $$
+    \vec{c}_3 := \eval_+(\vec{c}_1, \vec{c}_2)) = \vec{c}_1 + \vec{c}_2 = [3X^3 + X, 2X^2 - 3X + 6]
+    $$
+
+    and we can verify that this decrypts to $p_1 + p_2$ as
+
+    $$
+      p_3 := \inner{\vec{c}_3}{\bar{\vec{s}}} = 1 \in R_q
+    $$
+
+    $\mathhdr{\mathbf{\eval_\times(\vec{c}_1, \vec{c}_2)}}$
+
+    As discussed before, multiplication is the same as tensor product of $\vec{c}_1$ and $\vec{c}_2$ and the new secret key if the tensor product $\bar{\vec{s}}\otimes \bar{\vec{s}}$, therefore,
+
+    $$
+    \begin{aligned}
+    \vec{c}_4 &:= \eval_\times(\vec{c}_1,\vec{c}_1) \\
+     &= [-X^2 -3X + 4, X^3-X^2-3X+2] \otimes [3X^3 + X^2 - 3X + 3, -X^3+3X^2-3] \\
+     &= [(-X^2 -3X + 4)(3X^3 + X^2 - 3X + 3),  (-X^2 -3X + 4)(-X^3+3X^2-3), \\
+     &\quad\quad (X^3-X^2-3X+2)(3X^3 + X^2 - 3X + 3), (X^3-X^2-3X+2)(-X^3+3X^2-3)] \\
+     &= [5X^3 + 3X^2 + 3X + 1, X^3 + X^2 + X + 2, 2X^3 + 5X^2 + X + 5,  3X^2 + 5X + 1]
+    \end{aligned}
+    $$
+
+    and the new secret key is
+
+    $$
+    \begin{aligned}
+      \alpha(\vec{s}) &= \bar{\vec{s}}\otimes\bar{\vec{s}}  \\
+      &= [1, 5X^3 + 3X^2 + 2X + 1, 5X^3 + 3X^2 + 2X + 1, X^3 + 6X^2 + 2X]
+    \end{aligned}
+    $$
+
+    and we can verify that
+
+    $$
+      p_1\times p_2 := \inner{\vec{c}_4}{\alpha({\vec{s})}} = 0\quad\quad(\text{try it in SageMath!})
+    $$
 
 ## Relinearlization
 
