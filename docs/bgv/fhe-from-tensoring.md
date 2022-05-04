@@ -150,6 +150,11 @@ bi-linearity of inner product and [universal mapping
 property](https://kconrad.math.uconn.edu/blurbs/linmultialg/tensorprod.pdf)
 of tensor products, the answer is yes!
 
+!!! note
+
+    We will call $\bar{\vec{s}} = 1 \concat \vec{s}$ the
+    _normalized secret key_ and $\vec{s}$ the raw secret key.
+
 Recall, that since inner product is a linear functional,
 
 $$
@@ -245,9 +250,207 @@ To make these ideals concrete, we consider a toy example:
       p_1\times p_2 := \inner{\vec{c}_4}{\alpha({\vec{s})}} = 0\quad\quad(\text{try it in SageMath!})
     $$
 
-## Relinearlization
+As the example above demonstrates, the (almost trivial) algebra
+works! But there are two problems with the scheme:
 
-## Noise Management
+1. After every multiplication, the secret key needed to decrypt the
+   product ciphertext changes to $\bar{\vec{s}} \otimes
+   \bar{\vec{s}}$. Furthermore, the dimension of ciphertext doubles
+   because of tensor product, and
+2. The scheme is completely insecure in the current Learning
+   _Without_ Errors setting, but it's unclear how adding noise will
+   interferes with tensor-product of ciphertexts. For example, if
+   the tensor product amplifies the noise in such a way that
+   $p_1\cdot p_2$ cannot be "decoded," then the scheme will be
+   useless.
+
+[BV11][^BV11] family of homomorphic schemes deal with the issue
+dimension expansion using a technique called _relinearization_, and
+the issue of noise management (and related issues) using modulus
+switching and gadget matrices. Relinearlization is described in the
+next section, and the issue of noise management is described in
+individual FHE schemes.
+
+
+## Relinearization
+
+We continue the discussion in the Learning _Without_ Errors
+settings. In the present encryption scheme, the plaintext is the
+inner-product between the ciphertext and the secret key i.e., $p =
+\inner{\vec{c}}{\bar{\vec{s}}}$. That means, if $\vec{c}$ and
+$\bar{\vec{s}}$ are transformed to $\sigma(\vec{c})$ and
+$\tau(\bar{\vec{s}})$, such that $\inner{\vec{c}}{\bar{\vec{s}}} =
+\inner{\sigma(\vec{c})}{\tau(\bar{\vec{s}})}$, then
+$\sigma(\vec{c})$ will be a valid ciphertext corresponding to the
+new key $\tau(\bar{\vec{s}})$.
+
+The strategy to achieve this is to:
+
+1. Sample a new secret-key $\vec{t} \in R_q^{m}$ uniformly (and
+   independently--if circular security bothers you [BRS02][^BRS02])
+   at random and use this new key to publish "encryptions" of each
+   component of the old key $\vec{s}$.
+
+2. Use the encryptions of the old key and the old ciphertext to
+   generate a ciphertext that preserves the inner-product invariant.
+
+Now in detail: Suppose $\bar{\vec{s}} = \begin{bmatrix} 1 & s_1 &
+\cdots & s_n \end{bmatrix} \in R_q^{n+1}$ is the normalized secret
+key and $\vec{c} \in R_q^{n+1}$ is the corresponding ciphertext. Let
+$\vec{t} \in R_q^m$ be the new raw secret key (i.e., $\vec{t}$ does
+not have $1$ concatenated to it). Then the first pre-processing step
+(which must be carried out at the time of key-generation) is to
+compute encryptions of $s_i$ using the new key $\vec{t} \in R_q^m$,
+i.e., compute $n+1$ ciphertexts
+
+$$
+  \begin{aligned}
+  \psi_0 &= \inner{\vec{d}_0}{\vec{t}} + 1   \\
+  \psi_1 &= \inner{\vec{d}_1}{\vec{t}} + s_1 \\
+  \psi_2 &= \inner{\vec{d}_2}{\vec{t}} + s_2 \\
+  &\cdots \\
+  \psi_n &= \inner{\vec{d}_n}{\vec{t}} + s_n \\
+  \end{aligned}
+$$
+
+where $\vec{d}_i \in R_q^{m}$. These $n+1$ ciphertexts and the
+corresponding $\vec{d}_i$s can be represented as normalized
+ciphertexts in an $(n+1) \times (m+1)$ matrix $\mathbf{B}$ called
+relinearization matrix:
+
+$$
+  \mathbf{B} := \begin{pmatrix}
+    \psi_0 \concat {-\vec{d}_0} \\
+    \psi_1 \concat {-\vec{d}_1} \\
+    \psi_2 \concat {-\vec{d}_2} \\
+    \cdots \\
+    \psi_n \concat {-\vec{d}_n} \\
+  \end{pmatrix} \in Rq^{(n+1)\times (m+1)}.
+$$
+
+One can verify that
+
+$$
+\begin{equation}
+\begin{aligned}
+\bar{\vec{s}} &= \mathbf{B}\cdot \bar{\vec{t}}
+\end{aligned}
+\label{fhe-form-tensors:key-transformation}
+\end{equation}
+$$
+
+Assuming all vectors are represented as column vectors, for the
+ciphertext $\vec{c}$, encrypted under secret key $\bar{\vec{s}}$,
+the following holds:
+
+$$
+  \begin{aligned}
+  p = \inner{\vec{c}}{\bar{\vec{s}}} &= \inner{\vec{c}}{\mathbf{B}\cdot
+  \bar{\vec{t}}} & (\text{by}\;\ref{fhe-form-tensors:key-transformation})\\
+  &= \inner{\vec{c}^T\cdot\mathbf{B}}{\bar{\vec{t}}} & (\text{by bi-linearity})
+  \end{aligned}
+$$
+
+Therefore, $\vec{c}^T\cdot \mathbf{B}$ is a valid ciphertext for $p$
+albeit encrypted under a different secret-key $\bar{\vec{t}}$.
+Therefore, $\sigma_{\bar{\vec{t}}}(\vec{c}) = \vec{c}^T\mathbf{B}$.
+
+In the context of multiplication, relinearization is an extremely
+useful technique to reduce the dimension of $\vec{c}_1\otimes
+\vec{c}_2$ from $n^2$ to $n$ (or any other value). We demonstrate
+this with an example.
+
+??? "Example: Relinearization after $\eval_\times$"
+
+    We continue with the previous example and try to relinearize
+    the ciphertext corresponding to $p_1\cdot p_2$, where:
+
+    $$
+      \begin{aligned}
+      \bar{\vec{s}} &:= \begin{pmatrix} 1 \\ -2X^3 + 3X^2 + 2X + 1 \end{pmatrix} \\
+      \bar{\vec{s}}\otimes \bar{\vec{s}} &:= \begin{pmatrix} 1 \\ 5X^3 + 3X^2 + 2X + 1\\ 5X^3 + 3X^2 + 2X + 1\\ X^3 + 6X^2 + 2X \end{pmatrix} \\
+      \enc(p_1\cdot p_2) = \vec{c}_1\otimes \vec{c}_2 &:= \begin{pmatrix} 5X^3 + 3X^2 + 3X + 1 \\ X^3 + X^2 + X + 2 \\ 2X^3 + 5X^2 + X + 5 \\  3X^2 + 5X + 1 \end{pmatrix} \\
+      \end{aligned}
+    $$
+
+    We would like to bring down the dimension of the ciphertext to
+    just one Ring-LWE sample (i.e.,
+    $\text{dim}(\sigma(\vec{c}_1\otimes \vec{c}_1)) = 2$ ). To do
+    that we generate a new random key $\vec{t}$ and compute the
+    relinearization matrix $\mathbf{B}$.
+
+    $\mathhdr{\text{Preprocessing}\; \bar{\vec{s}}\otimes
+    \bar{\vec{s}}}$
+
+    Let $\bar{\vec{t}} := \begin{pmatrix}1 & 4X^3+2X+5 \end{pmatrix}^T$ be the new random secret key.
+    We randomly generate
+
+    $$
+    \begin{pmatrix}
+      d_0 \\
+      d_1 \\
+      d_2 \\
+      d_3
+    \end{pmatrix} :=
+    \begin{pmatrix} 5X^3 + 5X^2 + 2X + 3 \\
+      6X^3 + 2X + 4 \\
+      4X^3 + 3X^2 + 5X + 5 \\
+       3X^3 + 6X^2 + 3X + 2
+    \end{pmatrix}
+    $$
+
+    and compute the relinearization matrix as
+
+    $$
+      \mathbf{B} =
+      \begin{pmatrix}
+        \psi_0 & -d_0 \\
+        \psi_1 & -d_1 \\
+        \psi_2 & -d_2 \\
+        \psi_3 & -d_3 \\
+      \end{pmatrix} =
+      \begin{pmatrix}
+        5X^3 + 2X^2 + 3X + 5    & -(5X^3 + 5X^2 + 2X + 3) \\
+        2X^3 + 4X^2 + 6X + 1    & -(6X^3 + 2X + 4) \\
+        2X^3 + 5X^2 + 4X + 5    & -(4X^3 + 3X^2 + 5X + 5) \\
+        X^3 + 2X^2 + 4X + 6     & -(3X^3 + 6X^2 + 3X + 2)
+      \end{pmatrix}
+    $$
+
+    Then the new ciphertext for $p_1 \cdot p_2$ will be
+
+    $$
+      \begin{aligned}
+            \sigma(\vec{c}_4) &= \begin{pmatrix} 5X^3 + 3X^2 + 3X + 1 \\
+                             X^3 + X^2 + X + 2    \\
+                             2X^3 + 5X^2 + X + 5  \\
+                             3X^2 + 5X + 1
+              \end{pmatrix}^T\cdot
+              \begin{pmatrix}
+        5X^3 + 2X^2 + 3X + 5    & -(5X^3 + 5X^2 + 2X + 3) \\
+        2X^3 + 4X^2 + 6X + 1    & -(6X^3 + 2X + 4) \\
+        2X^3 + 5X^2 + 4X + 5    & -(4X^3 + 3X^2 + 5X + 5) \\
+        X^3 + 2X^2 + 4X + 6     & -(3X^3 + 6X^2 + 3X + 2)
+      \end{pmatrix} \\
+       &= \begin{pmatrix}
+              2X^{3} + 6X^{2} + X & 2X^{3} + 4X^{2} + 5X + 2\\
+          \end{pmatrix}
+      \end{aligned}
+    $$
+
+    and
+
+    $$
+    \begin{aligned}
+      p_1\cdot p_2 &\stackrel{?}{=} \inner{\sigma(\vec{c}_4)}{\bar{\vec{t}}}\\
+      &= \left \langle \begin{pmatrix} 2X^{3} + 6X^{2} + X \\ 2X^{3} + 4X^{2} + 5X + 2\end{pmatrix}, \begin{pmatrix} 1 \\ 4X^3+2X+5\end{pmatrix}\right \rangle& \\
+      &=  0 & (\text{check with sagemath!})
+    \end{aligned}
+    $$
+
+    as expected.
+
+## References
 
 [^BV11]: Z. Brakerski and V. Vaikuntanathan, [Efficient Fully
 Homomorphic Encryption from (Standard) LWE
@@ -265,3 +468,9 @@ Symposium on Foundations of Computer Science, 2011, pp. 97-106, doi:
     cryptography](https://cims.nyu.edu/~regev/papers/lwesurvey.pdf).
     In Proceedings of the 37th Annual ACM Symposium on Theory of
     Computing, Baltimore, MD, USA, May 22-24, 2005. pp. 84–93.
+
+[^BRS02]: J. Black, P. Rogaway and T. Shrimpton, [Encryption-Scheme
+    Security in the Presence of Key-Dependent
+    Messages](https://eprint.iacr.org/2002/100). In SAC 2002:
+    Revised papers from the 9th Annual International Workshop on
+    Selected Areas in Cryptography, August 2002, Pages 62–75.
