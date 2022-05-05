@@ -29,6 +29,7 @@ window.MathJax = {
         NL      :  "{\\mathsf \{NL\} }",
         IP      :  "{\\mathsf \{IP\} }",
         PRIMES  :  "{\\mathsf \{PRIMES\}}",
+        prob    :  "{\\mathsf \{Pr\}}",
         vec     :  ["\\mathbf \{#1\}", 1],
         ord     :  ["\\text\{ord\}(#1)", 1],
         Zmod    :  ["\\mathbb \{Z\}/\{#1\}\\mathbb \{Z\}", 1],
@@ -45,7 +46,9 @@ window.MathJax = {
         ceil    : ["\\left\\lceil\{#1\}\\right\\rceil", 1],
         F       :  ["\{\\mathbb\{F\}_\{#1\}\}", 1],
         mathhdr : ["\{\\large\\clubsuit\\quad\{#1\}\}", 1],
-        mcbox   : ["\\bbox[2px, border: 1px solid red]\{#1\}", 1]
+        mcbox   : ["\\bbox[2px, border: 1px solid red]\{#1\}", 1],
+        adv     : ["\\mathcal\{A\}"],
+        poly    : ["\{\\mathsf{poly}\\left(\{#1\}\\right)\}", 1]
     }
   },
   options: {

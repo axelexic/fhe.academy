@@ -28,7 +28,7 @@ plugins:
 nav:
     - Home: 'index.md'
     - 'Tensor Based Schemes':
-        - 'FHE from Tensor Products' : 'bgv/fhe-from-tensoring.md'
+        - 'HE from Tensor Products' : 'bgv/fhe-from-tensoring.md'
         - 'BGV': 'bgv/bgv.md'
         - 'BFV': 'bgv/bfv.md'
         - 'CKKS' : 'bgv/ckks.md'
@@ -39,10 +39,16 @@ nav:
         - 'GSW' : 'gsw/gsw.md'
         - 'FHWE' : 'gsw/fhew.md'
         - 'TFHE' : 'gsw/tfhe.md'
-    - 'Complexity Assumptions':
-        - 'SVP to LWE Reduction' : 'appendix/svp2lwe.md'
+    - 'Cryptanalysis':
+        - 'LWE'  : 'cryptanalysis/lwe-cryptanalysis.md'
+        - 'RLWE' : 'cryptanalysis/rlwe-cryptanalysis.md'
+        - 'LLL'  : 'cryptanalysis/lll.md'
     - 'Optimization Techniques':
         - 'NTT optimization' : 'appendix/ntt.md'
         - 'SIMD Operations' : 'appendix/simd.md'
+    - 'Appendix':
+        - 'SVP to LWE Reduction' : 'appendix/svp2lwe.md'
+        - 'Glossary' : 'appendix/glossary.md'
+
     - About:
         - 'License': 'license.md'

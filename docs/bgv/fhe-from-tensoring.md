@@ -1,16 +1,41 @@
+# Leveled Homomorphic Encryption from Tensor Products
 ## Introduction
 
-Almost all Fully Homomorphic Encryption schemes are based on certain hard lattice problems. Since a lattice by definition is a discrete additive subgroup of some ring $R$, the primary algebraic structure over the ciphertext is usually that of an $R$-module. Because of this, there's usually a natural _additive homomorphism_ between plaintext and ciphertext in almost all lattice-based encryption scheme! Finding _multiplicative homomorphism_ on the other hand presents several challenges --- first among them being, "what does it even mean to multiply two elements of an $R$-module?"
+Almost all Fully Homomorphic Encryption schemes are based on certain
+hard lattice problems. Since a lattice by definition is a discrete
+additive subgroup of some ring $R$, the primary algebraic structure
+over the ciphertext is usually that of an $R$-module. Because of
+this, there's usually a natural _additive homomorphism_ between
+plaintext and ciphertext in almost all lattice-based encryption
+scheme! Finding _multiplicative homomorphism_ on the other hand
+presents several challenges --- first among them being, "what does
+it even mean to multiply two elements of an $R$-module?"
 
-Brakersky and Vaikunatanathan in [BV11][^BV11] were the first to devise a novel tensor-product based technique that _does not_ by itself provides multiplicative homomorphism, but with the aid of a technique called relinearization, provides the next best thing: The ability to multiply ciphertexts, although under a different secret key! [BV11][^BV11] is also the first FHE scheme that's based entirely on standard lattice assumptions. (In contrast, Gentry's _first ever_ FHE scheme [Gen09][^Gen09], makes several other computational assumptions about ideal lattice.)
+Brakersky and Vaikunatanathan in [BV11][^BV11] were the first to
+devise a novel tensor-product based technique that _does not_ by
+itself provides multiplicative homomorphism, but with the aid of a
+technique called relinearization, provides the next best thing: The
+ability to multiply ciphertexts, although under a different secret
+key! [BV11][^BV11] is also the first FHE scheme that's based
+entirely on standard lattice assumptions. (In contrast, Gentry's
+_first ever_ FHE scheme [Gen09][^Gen09], makes several other
+computational assumptions about ideal lattice.)
 
-This post describes the algebraic aspects of [BV11] in a simplified setting (namely, Learning _Without_ Errors setting), and the full-fledged application of these ideas are described in [BGV](bgv.md) and [CKKS](ckks.md).
+This post describes the algebraic aspects of [BV11] in a simplified
+setting (namely, Learning _Without_ Errors setting), and the
+full-fledged application of these ideas are described in
+[BGV](bgv.md) and [CKKS](ckks.md).
 
 ## Additive Homomorphism
-The starting point of [BV11] scheme is Regev's [Reg05][^Reg05] bit-by-bit encryption scheme. Recall that in Regev's encryption scheme, the ciphertext corresponding to a plaintext bit $p \in \{0, 1\}$ is of the form $\enc(p) := (\vec{a}, \inner{\vec{a}}{\vec{s}} + e + \ffrac{q}{2}p) \in (\Zmod{q})^n\times \Zmod{q}$, where $\vec{s}$ is the unknown private-key.
+The starting point of [BV11] scheme is Regev's [Reg05][^Reg05]
+bit-by-bit encryption scheme. Recall that in Regev's encryption
+scheme, the ciphertext corresponding to a plaintext bit $p \in \{0,
+1\}$ is of the form $\enc(p) := (\vec{a}, \inner{\vec{a}}{\vec{s}} +
+e + \ffrac{q}{2}p) \in (\Zmod{q})^n\times \Zmod{q}$, where $\vec{s}$
+is the unknown private-key.
 
 
-!!! note
+!!! info
 
     Even though the plaintext $p$ can only have values $0$ or $1$,
     because of semantic security, there are _numerous valid
@@ -20,7 +45,13 @@ The starting point of [BV11] scheme is Regev's [Reg05][^Reg05] bit-by-bit encryp
     concrete value from that entire set.
 
 
-Suppose $\vec{c}_1 := (\vec{a}_1, b_1) \in \enc(p_1)$ and $\vec{c}_2 := (\vec{a}_2, b_2) \in \enc(p_2)$. The goal of _additive homomorphism_ between the plaintext and ciphertext is to compute a new piece of data $\vec{c}_3 := (\vec{a}_3, b_3)$ as a function of $\vec{c}_1$ and $\vec{c}_2$ such that $\vec{c}_3 \in \enc(p_1 + p_2)$. That is, we want to find a publicly computable function $\eval_+(\cdot, \cdot)$ with the following property:
+Suppose $\vec{c}_1 := (\vec{a}_1, b_1) \in \enc(p_1)$ and $\vec{c}_2
+:= (\vec{a}_2, b_2) \in \enc(p_2)$. The goal of _additive
+homomorphism_ between the plaintext and ciphertext is to compute a
+new piece of data $\vec{c}_3 := (\vec{a}_3, b_3)$ as a function of
+$\vec{c}_1$ and $\vec{c}_2$ such that $\vec{c}_3 \in \enc(p_1 +
+p_2)$. That is, we want to find a publicly computable function
+$\eval_+(\cdot, \cdot)$ with the following property:
 
 $$
   \begin{aligned}
@@ -29,9 +60,19 @@ $$
   \end{aligned}
 $$
 
-Notice once again that because of semantic security, there are an overwhelming number of ciphertexts of the form $(\vec{a}_3, b_3)$ that will _correctly_ decrypt to $p_1 + p_2$. What is required of $\eval_+(\cdot, \cdot)$ is to find one such representation that is entirely dependent on $\vec{c}_1$ and $\vec{c}_2$ and nothing else (except maybe fresh _public random coins_, if $\eval_+$ is randomized).
+Notice once again that because of semantic security, there are an
+overwhelming number of ciphertexts of the form $(\vec{a}_3, b_3)$
+that will _correctly_ decrypt to $p_1 + p_2$. What is required of
+$\eval_+(\cdot, \cdot)$ is to find one such representation that is
+entirely dependent on $\vec{c}_1$ and $\vec{c}_2$ and nothing else
+(except maybe fresh _public random coins_, if $\eval_+$ is
+randomized).
 
-Fortunately, because of the bi-linearity of the inner product $\inner{\vec{a}}{\vec{s}}$, finding $\eval_+$ is almost immediate. Since ciphertext of $p_1 + p_2 \in \{0,1\}$ is of the form $\left(\vec{a}_3, \inner{\vec{a}_3}{s} + e_3 + \ffrac{q}{2}(p_1 + p_2)\right),$ if one selects
+Fortunately, because of the bi-linearity of the inner product
+$\inner{\vec{a}}{\vec{s}}$, finding $\eval_+$ is almost immediate.
+Since ciphertext of $p_1 + p_2 \in \{0,1\}$ is of the form
+$\left(\vec{a}_3, \inner{\vec{a}_3}{s} + e_3 + \ffrac{q}{2}(p_1 +
+p_2)\right),$ if one selects
 
 \[
   \vec{a}_3 := \vec{a}_1 + \vec{a}_2
@@ -39,32 +80,38 @@ Fortunately, because of the bi-linearity of the inner product $\inner{\vec{a}}{\
 
 and
 
-\[
-  \begin{aligned}
-  b_3 := b_1 + b_2 & = \left (\inner{\vec{a_1}}{\vec{s}} + e_1 + \ffrac{q}{2}p_1 \right) + \left(\inner{\vec{a_2}}{\vec{s}} + e_2 + \ffrac{q}{2}p_2 \right) \\
-  & = \left(\inner{\vec{a_1} + \vec{a_2}}{\vec{s}} + (e_1 + e_2) + \ffrac{q}{2}(p_1 + p_2) \right)
-  \end{aligned}
-\]
+\[ \begin{aligned} b_3 := b_1 + b_2 & = \left
+  (\inner{\vec{a_1}}{\vec{s}} + e_1 + \ffrac{q}{2}p_1 \right) +
+  \left(\inner{\vec{a_2}}{\vec{s}} + e_2 + \ffrac{q}{2}p_2 \right)
+  \\
+  & = \left(\inner{\vec{a_1} + \vec{a_2}}{\vec{s}} + (e_1 + e_2) +
+  \ffrac{q}{2}(p_1 + p_2) \right) \end{aligned} \]
 
-then $\vec{c}_3 := (\vec{a}_1 + \vec{a}_2, b_1 + b_2)$ is a valid ciphertext for $p_1 + p_2$ --- provided the noise term $e_1 + e_2$ is not too large. In other words,
+then $\vec{c}_3 := (\vec{a}_1 + \vec{a}_2, b_1 + b_2)$ is a valid
+ciphertext for $p_1 + p_2$ --- provided the noise term $e_1 + e_2$
+is not too large. In other words,
 
-$$
-\eval_{+}((\vec{a_1},b_1), (\vec{a_2},b_2)) = (\vec{a_1} + \vec{a_1}, b_1 + b2)
-$$
+$$ \eval_{+}((\vec{a_1},b_1), (\vec{a_2},b_2)) = (\vec{a_1} +
+\vec{a_1}, b_1 + b2) $$
 
 suffices!
 
 ## Multiplicative Homomorphism
-Just like in the case of additive homomorphism, the goal of multiplicative homomorphism is: Given $c_1 := (\vec{a}_1, b_1) \in \enc(p_1)$ and $c_2 := (\vec{a}_2, b_2) \in \enc(p_2)$, compute a piece of data $\vec{c}_3 := (\vec{a}_3, b_2)$ such that $\vec{c}_3 \in \enc(p_1 \cdot p_2)$. In other words, we want to find a publicly computable function $\eval_\times(\cdot, \cdot)$ with the following signature:
+Just like in the case of additive homomorphism, the goal of
+multiplicative homomorphism is: Given $c_1 := (\vec{a}_1, b_1) \in
+\enc(p_1)$ and $c_2 := (\vec{a}_2, b_2) \in \enc(p_2)$, compute a
+piece of data $\vec{c}_3 := (\vec{a}_3, b_2)$ such that $\vec{c}_3
+\in \enc(p_1 \cdot p_2)$. In other words, we want to find a publicly
+computable function $\eval_\times(\cdot, \cdot)$ with the following
+signature:
 
-$$
-  \begin{aligned}
-  \eval_\times : (\Zmod{q})^{n+1} \times (\Zmod{q})^{n+1} & \longrightarrow (\Zmod{q})^{n+1}\\
-  \eval_\times((\vec{a}_1, b_1), (\vec{a}_2, b_2)) &= (\vec{a}_3, b_3) \in \enc(p_1 \cdot p_2)
-  \end{aligned}
-$$
+$$ \begin{aligned} \eval_\times : (\Zmod{q})^{n+1} \times
+  (\Zmod{q})^{n+1} & \longrightarrow (\Zmod{q})^{n+1}\\
+  \eval_\times((\vec{a}_1, b_1), (\vec{a}_2, b_2)) &= (\vec{a}_3,
+  b_3) \in \enc(p_1 \cdot p_2) \end{aligned} $$
 
-where $\vec{a}_1,\vec{a}_2, b_1, b_2$ satisfy the following constraints:
+where $\vec{a}_1,\vec{a}_2, b_1, b_2$ satisfy the following
+constraints:
 
 $$
 \begin{aligned}
@@ -81,7 +128,12 @@ b_3 &= \inner{\vec{a}_3}{\vec{s}} + e_3 + \ffrac{q}{2}(p_1\cdot p_2) \\
 \end{aligned}
 $$
 
-In order to compute $\vec{a}_3$ and $b_3$, we first simplify the above constraints and remove the error terms $e_1, e_2,$ and $e_3$, i.e., we are go back to the **completely insecure** world of Learning _Without_ Errors. With the error term gone, message decryption is 100% correct even without the scaling factor $\ffrac{q}{2}$, so we remove that too. Thus, in this setting
+In order to compute $\vec{a}_3$ and $b_3$, we first simplify the
+above constraints and remove the error terms $e_1, e_2,$ and $e_3$,
+i.e., we are go back to the **completely insecure** world of
+Learning _Without_ Errors. With the error term gone, message
+decryption is 100% correct even without the scaling factor
+$\ffrac{q}{2}$, so we remove that too. Thus, in this setting
 
 \[
 \enc(p) = \inner{\vec{a}}{\vec{s}} + p.
@@ -115,8 +167,8 @@ so cannot depend on it. On the other hand, $\alpha(\cdot)$ cannot
 depend on the ciphertext (i.e., $\vec{a}_1, \vec{a}_2, b_1, b_2$)
 because $\vec{a}_1, \vec{a}_2, b_1, b_2$ might be an intermediate
 value that never makes it directly to the output (e.g., the carry
-bit in addition), so _compactness_ demands that $\alpha$ can at
-most depend on $\vec{s}$.
+bit in addition), so _compactness_ demands that $\alpha$ can at most
+depend on $\vec{s}$.
 
 In the present case, then
 
@@ -150,33 +202,31 @@ bi-linearity of inner product and [universal mapping
 property](https://kconrad.math.uconn.edu/blurbs/linmultialg/tensorprod.pdf)
 of tensor products, the answer is yes!
 
-!!! note
+!!! info
 
-    We will call $\bar{\vec{s}} = 1 \concat \vec{s}$ the
-    _normalized secret key_ and $\vec{s}$ the raw secret key.
+    $\bar{\vec{s}} := 1 \concat \vec{s}$ is called the
+    _normalized secret-key_ and $\vec{c} := b_i \concat
+    {-\vec{a_i}}$ is called _normalized ciphertext_.
 
 Recall, that since inner product is a linear functional,
 
 $$
 \begin{aligned}
 p_1\cdot p_2 &= \inner{\vec{c}_1}{\bar{\vec{s}}}\cdot\inner{\vec{c}_1}{\bar{\vec{s}}} \\
- &= \inner{\vec{c}_1\otimes_{\ZZ}\vec{c}_2} {\bar{\vec{s}}\otimes_{\ZZ} \bar{\vec{s}}}
+ &= \inner{\vec{c}_1\otimes_{R_q}\vec{c}_2} {\bar{\vec{s}}\otimes_{R_q} \bar{\vec{s}}}
 \end{aligned}
 $$
 
-therefore, if $g := \inner{\cdot}{\cdot}$ is the inner product,
-$\eval_\times(\vec{c}_1, \vec{c}_2) := \vec{c}_1\otimes\vec{c}_2$
-the tensor product of ciphertext, and $\alpha(\vec{s}) :=
-\bar{\vec{s}}\otimes \bar{\vec{s}}$ the tensor product of secret key
-pre-pended with $1$, then the constraints of
-Equation-$\ref{fhe-form-tensors:clean-form}$ are satisfied and
-multiplication can be defined on the ciphertext.
+therefore, if $g$ is defined as the inner product, $\eval_\times$
+defined as the tensor product of ciphertext, and $\alpha(\vec{s})$
+defined as the tensor product of secret-key prepended with $1$,
+then the constraints of Equation-$\ref{fhe-form-tensors:clean-form}$
+are satisfied making homomorphic multiplication feasible.
 
-To make these ideals concrete, we consider a toy example:
+To make these ideas concrete, we consider a toy example:
 
-??? "Example $\eval_+, \eval_\times$"
+??? example "Example: $\eval_+, \eval_\times$"
 
-    \( \def\lift{\mathsterling} \)
     Support $p_1 = 1$ and $p_2 = 0$ and we want to compute $\vec{c}_1 = \enc(p_1), \vec{c}_2 = \enc(p_2)$, and homomorphically evaluate $\vec{c}_3 := \vec{c}_1 + \vec{c}_2 = \eval_+(\vec{c}_1, \vec{c}_2)$ and $\vec{c}_4 := \vec{c}_1\times \vec{c}_2 = \eval_\times(\vec{c}_1, \vec{c}_2)$.
 
     We will work in the Ring-LWE settings. Let $R = \mathbb{Z}[Y]/\langle Y^4 + 1\rangle$, $q=7$ and therefore $R_q = \Fq[X]/\langle X^4 + 1\rangle$, where $X$ is the image of $Y$ in $R_q$, i.e., $X = Y\quad\text{mod}\, q$. We will use one-dimensional vectors since we are in the Ring-LWE setting.
@@ -223,7 +273,7 @@ To make these ideals concrete, we consider a toy example:
 
     $\mathhdr{\mathbf{\eval_\times(\vec{c}_1, \vec{c}_2)}}$
 
-    As discussed before, multiplication is the same as tensor product of $\vec{c}_1$ and $\vec{c}_2$ and the new secret key if the tensor product $\bar{\vec{s}}\otimes \bar{\vec{s}}$, therefore,
+    As discussed before, multiplication is the same as tensor product of $\vec{c}_1$ and $\vec{c}_2$ and the new secret-key if the tensor product $\bar{\vec{s}}\otimes \bar{\vec{s}}$, therefore,
 
     $$
     \begin{aligned}
@@ -234,7 +284,7 @@ To make these ideals concrete, we consider a toy example:
     \end{aligned}
     $$
 
-    and the new secret key is
+    and the new secret-key is
 
     $$
     \begin{aligned}
@@ -252,10 +302,10 @@ To make these ideals concrete, we consider a toy example:
 As the example above demonstrates, the (almost trivial) algebra
 works! But there are two problems with the scheme:
 
-1. After every multiplication, the secret key needed to decrypt the
+1. After every multiplication, the secret-key needed to decrypt the
    product ciphertext changes to $\bar{\vec{s}} \otimes
-   \bar{\vec{s}}$. Furthermore, the dimension of ciphertext doubles
-   because of tensor product, and
+   \bar{\vec{s}}$. Furthermore, the dimension of ciphertext squares
+   after each homomorphic multiplication, and
 2. The scheme is completely insecure in the current Learning
    _Without_ Errors setting, but it's unclear how adding noise will
    interferes with tensor-product of ciphertexts. For example, if
@@ -296,7 +346,7 @@ to $m$ is as follows:
 Now in detail: Suppose $\bar{\vec{s}} = \begin{bmatrix} 1 & s_1 &
 \cdots & s_n \end{bmatrix} \in R_q^{n+1}$ is the normalized secret
 key and $\vec{c} \in R_q^{n+1}$ is the corresponding ciphertext. Let
-$\vec{t} \in R_q^m$ be the new raw secret key (i.e., $\vec{t}$ does
+$\vec{t} \in R_q^m$ be the new raw secret-key (i.e., $\vec{t}$ does
 not have $1$ concatenated to it). Then the first pre-processing step
 (which must be carried out at the time of key-generation) is to
 compute encryptions of $s_i$ using the new key $\vec{t} \in R_q^m$,
@@ -339,7 +389,7 @@ $$
 $$
 
 Assuming all vectors are represented as column vectors, for the
-ciphertext $\vec{c}$, encrypted under secret key $\bar{\vec{s}}$,
+ciphertext $\vec{c}$, encrypted under secret-key $\bar{\vec{s}}$,
 the following holds:
 
 $$
@@ -359,7 +409,7 @@ useful technique to reduce the dimension of $\vec{c}_1\otimes
 \vec{c}_2$ from $n^2$ to $n$ (or any other value). We demonstrate
 this with an example.
 
-??? "Example: Relinearization after $\eval_\times$"
+??? example "Example: Relinearization after $\eval_\times$"
 
     We continue with the previous example and try to relinearize
     the ciphertext corresponding to $p_1\cdot p_2$, where:
@@ -381,7 +431,7 @@ this with an example.
     $\mathhdr{\text{Preprocessing}\; \bar{\vec{s}}\otimes
     \bar{\vec{s}}}$
 
-    Let $\bar{\vec{t}} := \begin{pmatrix}1 & 4X^3+2X+5 \end{pmatrix}^T$ be the new random secret key.
+    Let $\bar{\vec{t}} := \begin{pmatrix}1 & 4X^3+2X+5 \end{pmatrix}^T$ be the new random secret-key.
     We randomly generate
 
     $$
