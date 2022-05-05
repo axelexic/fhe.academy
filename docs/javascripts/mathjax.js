@@ -9,7 +9,6 @@ window.MathJax = {
     displayMath: [["\\[", "\\]"]],
     processEscapes: true,
     processEnvironments: true,
-    equationNumbers: { autoNumber: "AMS" },
     tags: 'ams',
     macros: {
         FqBar   :  "{\\overline\{\\mathbb\{F\}\}_q}",

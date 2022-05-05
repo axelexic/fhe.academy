@@ -177,11 +177,11 @@ To make these ideals concrete, we consider a toy example:
 ??? "Example $\eval_+, \eval_\times$"
 
     \( \def\lift{\mathsterling} \)
-    Support $p_1 = 1$ and $p_2 = 0$ and we want to compute $\vec{c}_1 = \enc(p_1), \vec{c}_2 = \enc(p_2)$, and homomorphically evaluate $\vec{c}_3 := \vec{c}_1 + \vec{c}_2 = eval_+(\vec{c}_1, \vec{c}_2)$ and $\vec{c}_4 := \vec{c}_1\times \vec{c}_2 = \eval_\times(\vec{c}_1, \vec{c}_2)$.
+    Support $p_1 = 1$ and $p_2 = 0$ and we want to compute $\vec{c}_1 = \enc(p_1), \vec{c}_2 = \enc(p_2)$, and homomorphically evaluate $\vec{c}_3 := \vec{c}_1 + \vec{c}_2 = \eval_+(\vec{c}_1, \vec{c}_2)$ and $\vec{c}_4 := \vec{c}_1\times \vec{c}_2 = \eval_\times(\vec{c}_1, \vec{c}_2)$.
 
     We will work in the Ring-LWE settings. Let $R = \mathbb{Z}[Y]/\langle Y^4 + 1\rangle$, $q=7$ and therefore $R_q = \Fq[X]/\langle X^4 + 1\rangle$, where $X$ is the image of $Y$ in $R_q$, i.e., $X = Y\quad\text{mod}\, q$. We will use one-dimensional vectors since we are in the Ring-LWE setting.
 
-    In order to encrypt in the current simplified Regev encryption setting, we randomly chose $\vec{a}_1 := [6X^3+X^2+3X+5]$, $\vec{a}_2 := [X^3+4X^2+3]$ and $\vec{s} := [5X^3+3X^2+2X+1]$, where $\vec{a}_1, \vec{a}_2, \vec{s} \in \left (\F{7}[X]/\langle X^4 + 1 \rangle \right)^1$.
+    In order to encrypt in the current simplified Regev encryption setting, we randomly chose $\vec{a}_1 := \begin{pmatrix}6X^3+X^2+3X+5 \end{pmatrix}$, $\vec{a}_2 := \begin{pmatrix} X^3+4X^2+3 \end{pmatrix}$ and $\vec{s} := \begin{pmatrix}5X^3+3X^2+2X+1 \end{pmatrix}$, where $\vec{a}_1, \vec{a}_2, \vec{s} \in \left (\F{7}[X]/\langle X^4 + 1 \rangle \right)^1$.
 
     To compute cipher text, we first compute, $b_i$s as
 
@@ -198,10 +198,10 @@ To make these ideals concrete, we consider a toy example:
 
     $$
       \begin{aligned}
-      \vec{c}_1 &:= [b_1 \concat -\vec{a}_1] = [-X^2 -3X + 4, X^3-X^2-3X+2] \\
-      \vec{c}_2 &:= [b_2 \concat -\vec{a}_2] = [3X^3 + X^2 - 3X + 3, -X^3+3X^2-3]\quad
+      \vec{c}_1 &:= [b_1 \concat -\vec{a}_1] = \begin{pmatrix}-X^2 -3X + 4 \\ X^3-X^2-3X+2 \end{pmatrix} \\
+      \vec{c}_2 &:= [b_2 \concat -\vec{a}_2] = \begin{pmatrix}3X^3 + X^2 - 3X + 3 \\ -X^3+3X^2-3\end{pmatrix}\quad
       \text{and} \\
-      \bar{\vec{s}} &:= [ 1 \concat \vec{s}] = [1, -2X^3+3X^2+2X+1]
+      \bar{\vec{s}} &:= [ 1 \concat \vec{s}] = \begin{pmatrix}1 \\ -2X^3+3X^2+2X+1 \end{pmatrix}
       \end{aligned}
     $$
 
@@ -212,7 +212,7 @@ To make these ideals concrete, we consider a toy example:
     As discussed before, addition two cipher text is just the addition to two vectors
 
     $$
-    \vec{c}_3 := \eval_+(\vec{c}_1, \vec{c}_2)) = \vec{c}_1 + \vec{c}_2 = [3X^3 + X, 2X^2 - 3X + 6]
+    \vec{c}_3 := \eval_+(\vec{c}_1, \vec{c}_2)) = \vec{c}_1 + \vec{c}_2 = \begin{pmatrix}3X^3 + X \\ 2X^2 - 3X + 6 \end{pmatrix}
     $$
 
     and we can verify that this decrypts to $p_1 + p_2$ as
@@ -228,10 +228,9 @@ To make these ideals concrete, we consider a toy example:
     $$
     \begin{aligned}
     \vec{c}_4 &:= \eval_\times(\vec{c}_1,\vec{c}_1) \\
-     &= [-X^2 -3X + 4, X^3-X^2-3X+2] \otimes [3X^3 + X^2 - 3X + 3, -X^3+3X^2-3] \\
-     &= [(-X^2 -3X + 4)(3X^3 + X^2 - 3X + 3),  (-X^2 -3X + 4)(-X^3+3X^2-3), \\
-     &\quad\quad (X^3-X^2-3X+2)(3X^3 + X^2 - 3X + 3), (X^3-X^2-3X+2)(-X^3+3X^2-3)] \\
-     &= [5X^3 + 3X^2 + 3X + 1, X^3 + X^2 + X + 2, 2X^3 + 5X^2 + X + 5,  3X^2 + 5X + 1]
+     &= \begin{pmatrix}-X^2 -3X + 4 \\ X^3-X^2-3X+2 \end{pmatrix} \otimes \begin{pmatrix} 3X^3 + X^2 - 3X + 3 \\ -X^3+3X^2-3 \end{pmatrix} \\
+     &= \begin{pmatrix}(-X^2 -3X + 4)(3X^3 + X^2 - 3X + 3) \\  (-X^2 -3X + 4)(-X^3+3X^2-3) \\ (X^3-X^2-3X+2)(3X^3 + X^2 - 3X + 3) \\ (X^3-X^2-3X+2)(-X^3+3X^2-3) \end{pmatrix} \\
+     &= \begin{pmatrix} 5X^3 + 3X^2 + 3X + 1 \\ X^3 + X^2 + X + 2 \\ 2X^3 + 5X^2 + X + 5 \\  3X^2 + 5X + 1 \end{pmatrix}
     \end{aligned}
     $$
 
@@ -240,14 +239,14 @@ To make these ideals concrete, we consider a toy example:
     $$
     \begin{aligned}
       \alpha(\vec{s}) &= \bar{\vec{s}}\otimes\bar{\vec{s}}  \\
-      &= [1, 5X^3 + 3X^2 + 2X + 1, 5X^3 + 3X^2 + 2X + 1, X^3 + 6X^2 + 2X]
+      &= \begin{pmatrix}1 \\ 5X^3 + 3X^2 + 2X + 1 \\ 5X^3 + 3X^2 + 2X + 1 \\ X^3 + 6X^2 + 2X \end{pmatrix}
     \end{aligned}
     $$
 
     and we can verify that
 
     $$
-      p_1\times p_2 := \inner{\vec{c}_4}{\alpha({\vec{s})}} = 0\quad\quad(\text{try it in SageMath!})
+      p_1\times p_2 := \inner{\vec{c}_4}{\alpha({\vec{s})}} = 0\quad\quad(\text{check in SageMath!})
     $$
 
 As the example above demonstrates, the (almost trivial) algebra
@@ -264,19 +263,18 @@ works! But there are two problems with the scheme:
    $p_1\cdot p_2$ cannot be "decoded," then the scheme will be
    useless.
 
-[BV11][^BV11] family of homomorphic schemes deal with the issue
-dimension expansion using a technique called _relinearization_, and
-the issue of noise management (and related issues) using modulus
-switching and gadget matrices. Relinearlization is described in the
-next section, and the issue of noise management is described in
-individual FHE schemes.
+[BV11][^BV11] family of homomorphic schemes deal with the issue of
+dimension explosion using a technique called _relinearization_,
+which we discuss in the next section. The issue of noise management
+is described in individual FHE schemes as it requires exact details
+about the actual encryption scheme.
 
 
 ## Relinearization
 
 We continue the discussion in the Learning _Without_ Errors
 settings. In the present encryption scheme, the plaintext is the
-inner-product between the ciphertext and the secret key i.e., $p =
+inner-product between the ciphertext and the secret-key i.e., $p =
 \inner{\vec{c}}{\bar{\vec{s}}}$. That means, if $\vec{c}$ and
 $\bar{\vec{s}}$ are transformed to $\sigma(\vec{c})$ and
 $\tau(\bar{\vec{s}})$, such that $\inner{\vec{c}}{\bar{\vec{s}}} =
@@ -284,12 +282,13 @@ $\tau(\bar{\vec{s}})$, such that $\inner{\vec{c}}{\bar{\vec{s}}} =
 $\sigma(\vec{c})$ will be a valid ciphertext corresponding to the
 new key $\tau(\bar{\vec{s}})$.
 
-The strategy to achieve this is to:
+The general strategy to transform the cipher text of dimension $n$
+to $m$ is as follows:
 
-1. Sample a new secret-key $\vec{t} \in R_q^{m}$ uniformly (and
-   independently--if circular security bothers you [BRS02][^BRS02])
-   at random and use this new key to publish "encryptions" of each
-   component of the old key $\vec{s}$.
+1. First, sample a new secret-key $\vec{t} \in R_q^{m}$ uniformly
+   (and independently--if circular security [BRS02][^BRS02] bothers
+   you) at random and use this new key to publish "encryptions" of
+   each component of the old key $\vec{s}$.
 
 2. Use the encryptions of the old key and the old ciphertext to
    generate a ciphertext that preserves the inner-product invariant.
@@ -347,13 +346,13 @@ $$
   \begin{aligned}
   p = \inner{\vec{c}}{\bar{\vec{s}}} &= \inner{\vec{c}}{\mathbf{B}\cdot
   \bar{\vec{t}}} & (\text{by}\;\ref{fhe-form-tensors:key-transformation})\\
-  &= \inner{\vec{c}^T\cdot\mathbf{B}}{\bar{\vec{t}}} & (\text{by bi-linearity})
+  &= \inner{\mathbf{B}^T\cdot \vec{c}}{\bar{\vec{t}}} & (\text{by bi-linearity})
   \end{aligned}
 $$
 
-Therefore, $\vec{c}^T\cdot \mathbf{B}$ is a valid ciphertext for $p$
+Therefore, $\mathbf{B}^T\cdot \vec{c}$ is a valid ciphertext for $p$
 albeit encrypted under a different secret-key $\bar{\vec{t}}$.
-Therefore, $\sigma_{\bar{\vec{t}}}(\vec{c}) = \vec{c}^T\mathbf{B}$.
+Therefore, $\sigma_{\bar{\vec{t}}}(\vec{c}) = \mathbf{B}^T\cdot\vec{c}$.
 
 In the context of multiplication, relinearization is an extremely
 useful technique to reduce the dimension of $\vec{c}_1\otimes
@@ -421,19 +420,19 @@ this with an example.
 
     $$
       \begin{aligned}
-            \sigma(\vec{c}_4) &= \begin{pmatrix} 5X^3 + 3X^2 + 3X + 1 \\
-                             X^3 + X^2 + X + 2    \\
-                             2X^3 + 5X^2 + X + 5  \\
-                             3X^2 + 5X + 1
-              \end{pmatrix}^T\cdot
+            \sigma(\vec{c}_4) &=
               \begin{pmatrix}
         5X^3 + 2X^2 + 3X + 5    & -(5X^3 + 5X^2 + 2X + 3) \\
         2X^3 + 4X^2 + 6X + 1    & -(6X^3 + 2X + 4) \\
         2X^3 + 5X^2 + 4X + 5    & -(4X^3 + 3X^2 + 5X + 5) \\
         X^3 + 2X^2 + 4X + 6     & -(3X^3 + 6X^2 + 3X + 2)
-      \end{pmatrix} \\
+      \end{pmatrix}^T \cdot \begin{pmatrix} 5X^3 + 3X^2 + 3X + 1 \\
+                             X^3 + X^2 + X + 2    \\
+                             2X^3 + 5X^2 + X + 5  \\
+                             3X^2 + 5X + 1
+              \end{pmatrix} \\
        &= \begin{pmatrix}
-              2X^{3} + 6X^{2} + X & 2X^{3} + 4X^{2} + 5X + 2\\
+              2X^{3} + 6X^{2} + X \\ 2X^{3} + 4X^{2} + 5X + 2\\
           \end{pmatrix}
       \end{aligned}
     $$
@@ -444,7 +443,7 @@ this with an example.
     \begin{aligned}
       p_1\cdot p_2 &\stackrel{?}{=} \inner{\sigma(\vec{c}_4)}{\bar{\vec{t}}}\\
       &= \left \langle \begin{pmatrix} 2X^{3} + 6X^{2} + X \\ 2X^{3} + 4X^{2} + 5X + 2\end{pmatrix}, \begin{pmatrix} 1 \\ 4X^3+2X+5\end{pmatrix}\right \rangle& \\
-      &=  0 & (\text{check with sagemath!})
+      &=  0 & (\text{check with SageMath!})
     \end{aligned}
     $$
 
