@@ -336,7 +336,7 @@ The general strategy to transform the cipher text of dimension $n$
 to $m$ is as follows:
 
 1. First, sample a new secret-key $\vec{t} \in R_q^{m}$ uniformly
-   (and independently--if circular security [BRS02][^BRS02] bothers
+   (and independently--if circular security [BRS02][^BRS02] [BHHO08][^BHHO08] bothers
    you) at random and use this new key to publish "encryptions" of
    each component of the old key $\vec{s}$.
 
@@ -523,3 +523,8 @@ Symposium on Foundations of Computer Science, 2011, pp. 97-106, doi:
     Messages](https://eprint.iacr.org/2002/100). In SAC 2002:
     Revised papers from the 9th Annual International Workshop on
     Selected Areas in Cryptography, August 2002, Pages 62–75.
+
+[^BHHO08]: D. Boneh, S. Halevi, M. Hamburg, and R. Ostrovsky.
+  [Circular-secure encryption from decision
+  Diffie-Hellman](https://web.cs.ucla.edu/~rafail/PUBLIC/97.pdf). In
+  CRYPTO, pages 108–125, 2008.

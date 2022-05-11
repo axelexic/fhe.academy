@@ -5,7 +5,7 @@
 
 ??? abstract "Min-Entropy and $k$-source[^Rey11]"
 
-    Let $\mathbf{\chi}$ be a discrete random random variable that takes
+    Let $\mathbf{\chi}$ be a discrete random variable that takes
     values in the finite set $\mathcal{U}:=\{u_1, u_2, \cdots, u_n\}$
     with probabilities $\{ p_1, p_2, \cdots, p_n\}$, i.e,
     $p_i = \prob[X \leftarrow \chi; X = u_i]$. Then the min entropy
@@ -21,11 +21,13 @@
     $\exmp$
 
     Suppose an _unfair dice_ $\chi$ with faces marked $\{1,2,3,4,5,6\}$
-    rolls up with probabilities $\{\frac{1}{12}, \frac{1}{6}, \frac{3}{8},
-    \frac{1}{8}, \frac{1}{6}, \frac{1}{12}\}$ respectively.
-    Then, face $3$ has maximum probability of occurrence and the
-    min-entropy of _this dice_ is $H_\infty(\chi) = \log_2(\frac{8}{3})$.
-    Note that min-entropy is a property of the source!
+    rolls up with probabilities $\{\frac{1}{2}, \frac{1}{12}, \frac{1}{12},
+    \frac{1}{12}, \frac{1}{12}, \frac{1}{12}\}$ respectively.
+    Then, face $1$ has maximum probability of occurrence and the
+    min-entropy of _this dice_ is $H_\infty(\chi) = -\log_2(\frac{1}{2}) = 1$.
+    In contrast, shannon entropy -- which measures the average uncertainty
+    about the source -- is $\frac{1}{2} + \log_2(3) > 2.$
+
 
 ??? abstract "Statistical Distance"
 
@@ -103,6 +105,92 @@
     therefore has $3^{(n - m)}$ solutions. Therefore, the probability of
     collision is $\frac{3^{(n - m)}}{q^m}.$
 
+??? abstract "Randomness Extractor [Vad12, Ch 6 ][^Vad12] "
+
+    A function
+    $\operatorname{Ext} : \{0,1\}^n \times \{0,1\}^d \longrightarrow \{0,1\}^m$
+    is a $(k,\epsilon)$-**seeded extractor** if for _every_ $k$-source $X$ on
+    $\{0,1\}^n$ and a uniformly random seed $\psi \xleftarrow{\$} U_d$,
+
+    $$
+    \Delta(\operatorname{Ext}(X, \psi), U_m) \leq \epsilon.
+    $$
+
+    where the distribution of $\operatorname{Ext}(X, \psi)$ is _independent_
+    of the distribution on $\psi$, i.e., $\psi$ can be re-used as a seed
+    for something else and can even be made public without compromising
+    the uniform randomness guarantee of $\operatorname{Ext}(X, \psi)$.
+
+
+??? abstract "Leftover Hash Lemma [HILL99][^HILL99] "
+
+    Leftover Hash Lemma (LHL) says that Universal Hash Functions are
+    good randomness extractors.
+
+    More formally, let $X$ be a $k$-source
+    (i.e., $X$ has min-entropy $k$) and let $\epsilon < 1$ be a fixed
+    parameter. Let $\mathcal{H}$ be a
+    family of $2$-universal hash functions indexed by a $d$-bit seed
+    (i.e., $|\mathcal{H}| = 2^d$) such that forall $h_i \in \mathcal{H}$,
+    $h_i : X \longrightarrow \{0,1\}^{k - 2\log(\frac{1}{\epsilon})}$, then
+
+    $$
+      \underset{i \xleftarrow{\$} U_{2^d}}{\operatorname{Ext}}(x, i) = h_i(x)
+    $$
+
+    is a strong $(k, \epsilon/2)$ extractor, with seed $i$ (which is chosen by
+    the user).
+
+??? summary "Learning With Error Problem"
+
+    The search and decisional LWE problems are parameterized by a
+    dimension $n \in \ZZ$ and modulus $q \gg n$. Let $R$ be a ring
+    (either $\ZZ$ or $\ZZ[X]/\langle f(X) \rangle$, where
+    $\deg(f) = n$), and $R_q := R/\langle q \rangle$. Let
+    $\Gamma_{n}$ and $\Xi_n$ be two oracles that both produce
+    samples of the form $(\vec{a}_i, b_i) \in R_q^n\times R_q$,
+    where $\vec{a}_i$ is always sampled uniformly at random by
+    both $\Gamma_n$ and $\Xi_n$.
+
+    Between $\Gamma_n$ and $\Xi_n$, one of the oracles samples
+    $b_i$ uniformly at random (i.e.,  $b_i \xleftarrow{\$} R_q$),
+    while the other computes $b_i$ as follows:
+
+    $$
+      b_i = \inner{\vec{a}_i}{\vec{s}} + e_i.
+    $$
+
+    Here $\vec{s}$ is sampled _uniformly at random_ and $e_i$ is
+    sampled from some distribution $\bar{\chi}$ over $R_q$ (or
+    equivalently, from some "narrow" distribution $\chi$ over $R$
+    then reduced modulo $q$). Furthermore, it's assumed that the
+    distribution $\bar{\chi}$ is known to the adversary.
+
+    The **decisional LWE problem** asks an adversary to distinguish
+    between $\Gamma_n$ and $\Xi_n$. The _decisional LWE assumption_
+    states that given $\poly{n}$ samples as above where min-entropy
+    $H_\infty(\chi) > 0$, a computationally bounded (quantum)
+    adversary cannot distinguish between $\Gamma_n$ and $\Xi_n$.
+
+    The **search LWE problem** asks an adversary to find $\vec{s}$ assuming
+    the oracle was generating samples of the form $(\vec{a}_i, \inner{\vec{a}_i}{\vec{s}} + e_i)$.
+
+    $\mathhdr{\text{Lemma}}\quad$ [ACPS09, Lemma 1][^ACPS09]
+
+    Let $p = \poly{n}$ be prime, and
+    $q = p^k$. Let $\bar{\chi}$ be a distribution defined over
+    the ring $\Zmod{p^k}$ that takes values in the narrow range
+    $\{ -\frac{p-1}{2}, \cdots, \frac{p-1}{2}\} \subseteq \Zmod{p^k}$
+    with overwhelming probability. Let $\mathcal{A}_{\vec{s}
+    \leftarrow \bar{\chi},\bar{\chi}}$
+    be a PPT adversary that can solve LWE problem when
+    $\vec{s}$ and $e_i$s are drawn from $\bar{\chi}$,
+    then there exists another PPT adversary $\mathcal{B}_{\vec{s}
+    \leftarrow U,\bar{\chi}}$ that can also solve the LWE problem
+    when $\vec{s}$ is drawn uniformly at random from $\Zmod{p^k}$
+    and $e_i$s is drawn from $\bar{\chi}$.
+
+
 ## Standard Notations
 
 | Term      | Meaning                                           |
@@ -129,3 +217,19 @@
     Functions](https://www.sciencedirect.com/science/article/pii/0022000079900448).
     In _Journal of Computer and System Sciences_, Volume 18, Issue
     2, April 1979, Pages 143-154.
+
+[^Vad12]: S. P. Vadhan,
+    [Pseudorandomness](https://www.nowpublishers.com/article/Details/TCS-010),
+    Foundations and Trends in Theoretical Computer Science:
+    Vol. 7: No. 1–3, pp 1-336, 2012.
+
+[^HILL99]: J. Hastad, R. Impagliazzo, L.A. Levin, and M. Luby,
+  [Construction of pseudorandom generator from any one-way
+  function](https://epubs.siam.org/doi/10.1137/S0097539793244708).
+  SIAM Journal on Computing, 28(4):1364–1396, 1999.
+
+[^ACPS09]: B. Applebaum, D. Cash, C. Peikert and A. Sahai, [Fast
+  Cryptographic Primitives and Circular-Secure Encryption Based on
+  Hard Learning Problems](https://www.iacr.org/archive/crypto2009/56770585/56770585.pdf). In _Advances in Cryptology - CRYPTO 2009,
+  29th Annual International Cryptology Conference_, vol: 5677,
+  pages: 595-618, 2009
