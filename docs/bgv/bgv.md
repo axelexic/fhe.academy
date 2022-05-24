@@ -13,22 +13,6 @@ cyclotomic field.
 
 ## Notation
 
-Let $\mathcal{D}$ be a probability distribution defined over a set
-$R$, which can be discrete or continuous, finite of infinite. We
-use the notation
-
-$$
-x \xleftarrow{\mathcal{D}} R
-$$
-
-to mean a random sample $x$ drawn according to the distribution
-$\mathcal{D}$ over $R$. For example $x \xleftarrow{\mathsf{DGS}}
-\ZZ$ means $x$ is drawn from a discrete gaussian distribution over
-integers. When $R$ is _discrete and finite_, the symbol ${\$}$ means
-a uniform distribution. For example, $x \xleftarrow{\$} (\Zmod{6})$
- means $x$ is drawn uniformly at random from $\Zmod{6}$.
-
-
 For a positive integer $m$, we denote by $\ZZ_m$ the quotient ring
 $\Zmod{m}$, i.e., the ring of integers modulo $m$. We denote by
 $\ZZ_m^*$ the group of units in $\ZZ_m$, i.e., those elements in
@@ -44,7 +28,7 @@ $\ZZ_m = \{m\ZZ, 1 + m\ZZ, \cdots, (m-1) + m\ZZ \}$, which is a
 multiplication structure (while $[[m]]$ is not even closed under
 addition).
 
-If $x \in \ZZ_m$, then we define $\lift{x}_m$ as the numerically least
+If $x \in \ZZ_m$, then we define $\lift{x}_m$ as the numerically-least
 residue of $x$, i.e, $\lift{x}_m$ is an integer $y$ such that
 $-\frac{m}{2} \leq y < \frac{m}{2}$ and $x = y\;\text{mod}\, m$.
 More formally,
@@ -81,13 +65,33 @@ $$
 \end{aligned}
 $$
 
+### Probability Distributions
+
+Let $\mathcal{D}$ be a probability distribution defined over a set
+$R$, which can be discrete or continuous, finite of infinite. We use
+the notation
+
+$$
+x \xleftarrow{\mathcal{D}} R
+$$
+
+to mean a random sample $x$ drawn according to the distribution
+$\mathcal{D}$ over $R$. For example $x \xleftarrow{\mathsf{DGS}}
+\ZZ$ means $x$ is drawn from a discrete gaussian distribution (DGS)
+over integers. When $R$ is _discrete and finite_, the symbol ${\$}$
+means a uniform distribution. For example, $x \xleftarrow{\$}
+ (\Zmod{6})$ means $x$ is drawn uniformly at random from $(\Zmod{6})
+ \cap \{0, 1,\cdots, 5\}$.
+
+
 ### Roots of Unity and Cyclotomic Polynomials
 
-Let $m$ be an integer and $k$ be either $\QQ$ or $\mathbb{F}_{p^h}$.
+Let $m$ be an integer and $k$ be either $\QQ$ or $\mathbb{F}_{p^h}\;
+(p \in \PRIMES, h\in \ZZ_{> 0})$.
 An element $\omega$ in the algebraic closure $\bar{k}$ of $k$, is
 called an $m$-th **root of unity** if $\omega^m = 1$. In other
 words, $\omega$ is a root of the equation $f(x) = X^m -1 \in
- k[X]$. Let
+ \bar{k}[X]$. Let
 
 $$
 \Omega_m^k := \{\omega_1, \omega_2, \cdots \}
@@ -101,7 +105,8 @@ $m$ root, therefore $\norm{\Omega_m^k} = m$. When $p \mid m$, say $m
 = p^\alpha\cdot l$ (with $p \nmid l$) then
 
 $$
-  X^m - 1 =  X^{p^\alpha l} - 1 = (X^l-1)^{p^\alpha} = 0
+  X^m - 1 =  X^{p^\alpha l} - 1 = (X^l-1)^{p^\alpha} \implies (X^l-1)
+  = 0
 $$
 
 has $l$ distinct roots and $\norm{\Omega_m^k} = l$.
@@ -112,20 +117,23 @@ has $l$ distinct roots and $\norm{\Omega_m^k} = l$.
 
     - **Closure**: Let $\omega_1, \omega_2 \in \Omega_m^k$. Then $1 = 1\cdot 1 = (\omega_1)^m (\omega_2)^m = (\omega_1\cdot\omega_2)^m \implies \omega_1\cdot\omega_2 \in \Omega_m^k.$
 
-    - **Inverse**: Let $\omega \in \Omega_m^k$ and let $l$ be a positive integer. Then $1 = 1^l = \left(\omega^m\right)^l = \left(\omega^l\right)^m$ $\implies$ $\omega^l$ is also an $m$-th root of unity -- by definition. That means, $\omega^{m-1}$ is an $m$-th root of unity $\implies \omega\cdot \omega^{m-1} = \omega^m = 1$, and $\omega^{m-1}$ is the inverse element of $\omega$.
+    - **Inverse**: Let $\omega \in \Omega_m^k$ and let $s$ be a
+    positive integer. Then $1 = 1^s = \left(\omega^m\right)^s = \left(\omega^s\right)^m$
+    $\implies$ $\omega^s$ is also an $m$-th root of unity -- by definition.
+    If we set $s = m-1$, then $\omega^{m-1}$ must also be an $m$-th root of unity.
+    In other words, $\forall \omega, \omega^{m-1} \in \Omega_m^k$ and
+    $\omega\cdot\omega^{m-1} = 1.$
 
 
 ??? abstract  "Lemma: $\left(\Omega_m^k, \times\right)$ is cyclic"
 
     Let $h := \norm{\Omega_m^k}$ be the order of $\Omega_m^k$, i.e.,
-    $h = m$ or $h = l$ if $m = p^\alpha l$. Let $\norm{\omega} \in \ZZ$
-    denote the multiplicative order of $\omega \in \Omega_m^k$, i.e.,
-    of all integers $j \in \ZZ$, $\norm{\omega}$ is the smallest
-    _positive integer_ such that $\omega^j = 1$.
+    $h = m$ or $h = l$ if $m = p^\alpha l$. Let $\norm{\omega}$
+    denote the order of $\omega \in \Omega_m^k$.
 
     Let $\mathcal{D} := \{ d : d | h \}$ be the set of all factors
-    of  $h$. For each $d \in \mathcal{D}$ we collect all elements of
-    $\Omega_m^k$ whose order is $d$ as:
+    of  $h$. For each $d \in \mathcal{D}$, let $\mathcal{A}_d$ be the
+    set of elements of $\Omega_m^k$ whose order is $d$, i.e.,
 
     $$
       \mathcal{A}_d := \{ \omega \in \Omega_m^k : \norm{\omega} = d \}
@@ -199,28 +207,30 @@ has $l$ distinct roots and $\norm{\Omega_m^k} = l$.
     $\mathftr$
 
 Since $(\Omega_m^{k}, \times)$ is cyclic, we call the generators of
-this group, the **primitive** $m$-th roots of unity and denote this
-set by $\Omega_m^{*k}$. Let $\omega$ be a primitive $m$-th root.
-Then, there exists a natural group homomorphism $h_\omega$ between
-$(\ZZ_m, +)$ and $(\Omega_m^{k}, \times)$ give by
+this group the **primitive** $m$-th roots of unity and denote this
+set by $\Omega_m^\times \subseteq \Omega_m^k$. Let $\omega \in
+\Omega_m^\times$ be a _primitive_ $m$-th root. Then, there exists a
+natural group homomorphism $h_\omega$ between $(\ZZ_m, +)$ and
+$(\Omega_m^{k}, \times)$ give by
 
 $$
   \begin{aligned}
-  h_\omega &: \ZZ_m \rightarrow \Omega_m^k \\
-  h_\omega(i) &= \omega^i.
+  g_\omega &: \ZZ_m \rightarrow \Omega_m^\times \\
+  g_\omega(i) &= \omega^i.
   \end{aligned}
 $$
 
-Since this is a finite injective map, its a bijection. Furthermore,
-for every $i$ co-prime to $m$, $\norm{\omega^i} = \norm{\omega}$,
-and therefore $\omega^i$ is also primitive. In other words, there's
-a bijection between $\ZZ_m^*$ and $\Omega_m^{*k}$.
+Since $\omega$ is primitive and generates the entire group, $g$ is a
+finite injective map, and therefore bijective. Furthermore, for
+every $i$ co-prime to $m$, $\norm{\omega^i} = \norm{\omega}$, and
+therefore $\omega^i$ is also primitive. In other words, there's a
+bijection between $\ZZ_m^*$ and $\Omega_m^\times$.
 
 Let $\Phi_m(X)$ be a polynomial whose roots are _primitive_ $m$-th
 roots of unity, i.e.,
 
 $$
-  \Phi_m(X) := \prod_{\omega \in \Omega_m^{*k}} (X - \omega).
+  \Phi_m(X) := \prod_{\omega \in \Omega_m^\times} (X - \omega).
 $$
 
 $\Phi_m(X)$ is called the **$m$-th cyclotomic polynomial**. A-priori,
@@ -246,7 +256,9 @@ assumption, and is similar to a scheme proposed by Regev in
 Let $\Phi_m(X)$ be the $m$-th cyclotomic polynomial of degree $n =
 \phi(m)$. Let $q, p \in \ZZ$ be the ciphertext and plaintext modulus
 respectively, with  $q \gg p$ and $q, p \in \poly{n}$. Let
-$\bar{\Phi}_m$ denote the image of $\Phi_m$ modulo $q$ or $p$.
+$\bar{\Phi}_m$ denote the image of $\Phi_m$ modulo some prime.
+
+Let
 
 $$
 \begin{aligned}
@@ -254,24 +266,41 @@ R &:= \ZZ[Y]\large /\langle \Phi_m(Y)\rangle \\
 R_q &:= \ZZ[Y]\large/\langle \Phi_m(Y), q\rangle \cong (\Zmod{q})[X]\large/\langle
 \bar{\Phi}_m(X) \rangle \\
 R_p &:= \ZZ[Y]\large/\langle \Phi_m(Y), p\rangle \cong (\Zmod{p})[X]\large/\langle
-\bar{\Phi}_m(X) \rangle
+\bar{\Phi}_m(X) \rangle.
 \end{aligned}
 $$
 
+For any $\vec{y} \in \ZZ[Y]\large /\langle \Phi_m(Y)\rangle$, we
+denote the norm of $\vec{y}$ by $\norm{\vec{y}}$. For any $\vec{y}
+:= \sum_0^{m-1} a_iY^i$
+
+$$
+  \begin{aligned}
+  \norm{\cdot} &: \ZZ[Y]\large /\langle \Phi_m(Y)\rangle \rightarrow
+  \ZZ_(\ge 0) \\
+  \norm{\sum_0^{m-1} a_iY^i} &= \max\{\norm{a_0}, \norm{a_1},
+  \cdots, \norm{a_{m-1}} \}
+  \end{aligned}
+$$
+
+
 Let $\vec{\chi}$ be a "narrow" distribution defined over the
 polynomial quotient ring $R$ and let $\bar{\vec{\chi}}$ denote the
-distribution with finite support obtained by sampling $e(X)
-\xleftarrow{\vec{\chi}} R$ and reducing $\vec{e}(X)$ modulo $q$.
-Let, $B$ be an integer such that $B\cdot p \ll q$ and
-$\Pr[|\vec{e}(X)| > B : \vec{e}(X) \xleftarrow{\bar{\vec{\chi}}}
-R_q]$ is negligible, i.e., the norm of any sampled error term
-$\vec{e}(X)$ is bounded by $B$, with an overwhelming probability.
+distribution over the finite ring $R_q$ obtained by sampling
+$\vec{e}(X) \xleftarrow{\vec{\chi}} R$ and reducing $\vec{e}(X)$
+modulo $q$. Let $B$ be an integer such that $B\cdot p \ll q$ and
+$\prob\left[|\vec{e}(X)| > B : \vec{e}(X)
+\xleftarrow{\bar{\vec{\chi}}} R_q\right] < \epsilon$, i.e., the
+coefficient of any sampled error term $\vec{e}(X)$ is bounded by $B$
+with high probability.
+
+### Decisional Ring-LWE assumption
 
 Recall that under _decisional Ring-LWE assumption_, one is given two
 oracles $\Xi$ and $\Gamma$, both of which produce samples of the
-form $(\vec{a}_i(X), \vec{b}_i(X)) \in R_q^n\times R_q$.
-Furthermore, $\vec{a}_i(X)$ is sampled uniformly at random by both
-$\Xi$ and $\Gamma$, but $\vec{b}_i(X)$ is computed differently as
+form $(\vec{a}_i(X), \vec{b}_i(X)) \in R_q^n\times R_q$. In both
+$\Xi$ and $\Gamma$, $\vec{a}_i(X)$ is sampled uniformly at random,
+but $\vec{b}_i(X)$ is computed differently as
 
 - $\vec{b}_i(X) \xleftarrow{\$} R_q$ is sampled uniformly at random
   by one of $\Xi$ or $\Gamma$, while
@@ -286,21 +315,22 @@ pseudorandom.
 
 **Notation**: From now on, we write polynomials without the
 indeterminate $X$, i.e, $\vec{a}_i(X)$ is simply written
-as $\vec{a}_i$, etc.
+$\vec{a}_i$, etc.
 
 ### Symmetric-Key encryption from Ring-LWE
 
-Building a semantically secure secret-key encryption scheme from any
-pseudorandom sequence defined over a finite field (or ring) is
-almost immediate: Just add the message to a pseudorandom sample
-(i.e., compute the one-time pad in the appropriate field). At a high
-level, this is semantically secure because in any ring, the addition
-operation forms a group which defines a permutation over the
-elements of the ring. Therefore, if $\rho \xleftarrow{\$} R_q$ is a
-(pseudo) random element (not known to the adversary), then for all
-$x, y_1, y_2 \in R_q$, $\prob[x + \rho = y_1] = \prob[y_1 - x =
-\rho] = \frac{1}{|R_q|} = \prob[x + \rho = y_2]$. This proof can be
-made more precise using hybrid argument.
+Building a _semantically secure_ secret-key encryption scheme from
+any pseudorandom sequence defined over a finite field (or ring) is
+almost immediate: Just add the plaintext to a pseudorandom sample
+(i.e., compute the one-time-pad equivalent in the appropriate
+field). At a high level, this is semantically secure because in any
+ring, the addition operation forms a group which defines a
+permutation over the elements of the ring. Therefore, if $\rho
+\xleftarrow{\$} R_q$ is a (pseudo) random element (not known to the
+adversary), then for all $x, y_1, y_2 \in R_q$, $\prob[x + \rho =
+y_1]$ $= \prob[y_1 - x = \rho]$ $= \frac{1}{|R_q|}$ $= \prob[x +
+\rho = y_2]$. This proof can be made more precise using hybrid
+argument, but don't need it.
 
 In the context of Ring-LWE, for plaintext $m \in [[p]] \subseteq \ZZ$,
 secret key $\vec{s} \xleftarrow{\$} R_q$, and error $\vec{e}
@@ -317,7 +347,8 @@ $$
 $$
 
 and given ciphertext $\vec{c} \in R_q\times R_q$  and access to the
-secret key $\vec{s}$, one can decrypt as:
+secret key $\vec{s}$, one can decrypt $\vec{c} = (\vec{a}, \vec{b})$
+as:
 
 $$
 \begin{aligned}
@@ -331,10 +362,11 @@ Note that the decryption process computes $\vec{b}
 it to $\ZZ[X]/\langle \Phi_m \rangle$. Usually a modulo reduction
 from $\ZZ \mapsto \ZZ_q$ followed by a lift from $\ZZ_q \mapsto \ZZ$
 is not an identity operation. However, since $p|\vec{e}| \ll q$ with
-overwhelming probability, $|p\vec{e} + m|$ $\leq (|p\vec{e}| + p) \ll
-q$. Therefore, $\lift{\vec{b} -\vec{a}\cdot\vec{s}}_q$ $= \lift{p\cdot \vec{e}
+high probability, $|p\vec{e} + m|$ $\leq (|p\vec{e}| + p) \ll q$.
+Therefore, $\lift{\vec{b} -\vec{a}\cdot\vec{s}}_q$ $= \lift{p\cdot
+\vec{e}
 + m}_q \stackrel{\small{\textsf{whp}}}{=} p\cdot \vec{e} + m$, and
-  correctness of decryption follows immediately!
+  correctness follows immediately!
 
 ??? example
 
@@ -355,8 +387,8 @@ q$. Therefore, $\lift{\vec{b} -\vec{a}\cdot\vec{s}}_q$ $= \lift{p\cdot \vec{e}
     to map elements of one ring to the another.
 
     Let $\vec{s} := 760X^3 + 272X^2 + 340X + 174 \xleftarrow{\$} R_q$
-    be the secret key. Let  $m = 5 \in [8]$ be the plaintext.
-    Then, the ciphertext can be computed as:
+    be the secret key. Let  $m = 5 \in [[8]]$ be the plaintext we
+    want to encrypt. Then, the ciphertext can be computed as:
 
     $$
       \begin{aligned}
@@ -395,30 +427,33 @@ converting any (distribution-preserving) symmetric-key
 additively-homomorphic encryption scheme into a public-key
 additively homomorphic scheme. The basic idea is:
 
-- To first use the secret-key to compute _multiple encryptions_ of
-  zeros and publish the encryptions of zeros _as the public-key_.
+- First use the secret-key to compute **multiple encryptions of
+  zeros** and publish these encryptions of zeros _as the public-key_.
 
-- To encrypt a message $m$ _using the public-key_, one computes the
-  random subset-sum of encryptions of zeros from the public-key, and
-  use it as an one-time-pad to blind the message.
+- Then, to encrypt a message $m$ _using the public-key_ alone, one
+  computes the a subset-sum of encryptions of zeros from the
+  public-key to create an one-time-pad, and use it to blind the
+  message.
 
-Note that for this public-key encryption scheme to work, it's
-crucial that the subset-sum of encryptions of zeros preserve the
+For this public-key encryption scheme to be secure, it's crucial
+that the subset-sum of encryptions of zeros preserve the
 distribution of ciphertext. ([Rot11] proves something stronger,
-which we don't discuss here.)
+which we don't discuss here.) In case of Ring-LWE, thanks to
+Leftover Hash Lemma, this requirement is easily satisfied.
 
-BGV uses the above template to create the public-key encryption
-scheme. As noted in the general description of [FHE from tensor
+BGV uses the above template to achieve public-key encryption. As
+noted in the general description of [FHE from tensor
 products](./fhe-from-tensoring.md#multiplicative-homomorphism), we
-will also use the _normalized secret key_ and the _normalized
-ciphertext_ going forward.
+need to use _normalized secret key_ and _normalized
+ciphertext_ to make FHE evaluation procedures more tractable, so we
+summarize the encryption scheme in the normalized format below:
 
 |               |  Description |
 | --------------|--------------------------------------------------|
-| **Setup**     | $\lambda$ := Security parameter <br/><ul><li>$m=O(\lambda)$ $m$-th cyclotomic polynomial</li><li>$n=\phi(m)$ Lattice dimension</li><li>$q=\tilde{O}(n)$ ciphertext modulus</li><li>$p=O(n)$ plaintext modulus</li><li>$B=O(n)$ error spread satisfying $B\cdot p \ll q$</li><li> $R := \ZZ[Y]/\langle \Phi_m \rangle$</li><li>$R_q := \ZZ_q[X]\langle \bar{\Phi}_m \rangle$, where $\bar{\Phi}_m := \Phi_m\;\text{mod}\,q$</li><li>$\vec{\chi}$: error distribution over $\ZZ[X]/\langle \Phi_m \rangle$ such that $\prob\left[ \norm{\vec{x}} > B\; :\; \vec{x} \xleftarrow{\chi} \ZZ[X]/\langle \Phi_m \rangle \right] < \epsilon$</li><li>$\bar{\vec{\chi}}$: error distribution over $\ZZ_q[X]/\langle \bar{\Phi}_m \rangle$ computed by sampling $\vec{x} \xleftarrow{\chi} \ZZ[X]/\langle \Phi_m \rangle$ and returning $\vec{x}\; \text{mod}\, q$</li></ul>|
-| **KeyGen**        | <ul> <li>Generate secret polynomial: <br/>$\vec{s}' \xleftarrow{\chi} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$</li><>Set secret-key as $\vec{s} := \{1, \vec{s}'\}$ </li><li>Compute public-key as $n\log(q)$-dimensional vector<br/>$\vec{p} := \{(\vec{a}_i, \vec{a}_i\cdot \vec{s} + p\vec{e}_i) \}_{i=1}^{n\log(q)} \in \left(\ZZ_q[X]/\langle \bar{\Phi}_m\rangle {\Large\times} \ZZ_q[X]/\langle \bar{\Phi}_m\rangle \right)^{n\log(q)}$<br/>where $\vec{a}_i \xleftarrow{\$} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$ and $\vec{e}_i \xleftarrow{\bar{\chi}} \ZZ_q[X]/ \langle \bar{\Phi}_m \rangle$ </li></ul> |
-| **Encryption**    | <ul><li>Sample $\vec{r} \xleftarrow{\$} \{0, 1\} \subseteq \ZZ^{n\log(q)}$, i.e., a random $n\log(q)$ dimensional vector of $0$s and $1$s</li><li>$\enc(m, \{(\vec{a}_i, \vec{b}_i)\}) := (\vec{c}_0, \vec{c}_1) = \left(\inner{\{\vec{b}_i\}}{\vec{r}}+ m, {-}\inner{\{\vec{a}_i\}}{\vec{r}}\right)$</li></ul> |
-| **Decryption**    | <ul><li>$\dec(\vec{s}, (\vec{c}_0, \vec{c}_1)) = \left[[\vec{c}_0 + \vec{c}_1\cdot\vec{s}]\;\text{mod}\; p\right]$</li></ul>|
+| **Setup**     | $\lambda$ := Security parameter <br/><ul><li>$m=O(\lambda)$ $m$-th cyclotomic polynomial</li><li>$n=\phi(m)$ Lattice dimension</li><li>$q=\tilde{O}(n)$ ciphertext modulus</li><li>$p=O(n)$ plaintext modulus</li><li>$B=O(n)$ error spread satisfying $B\cdot p \ll q$</li><li>$M := n\log(q)$</li><li> $R := \ZZ[Y]/\langle \Phi_m \rangle$</li><li>$R_q := \ZZ_q[X]\langle \bar{\Phi}_m \rangle$, where $\bar{\Phi}_m := \Phi_m\;\text{mod}\,q$</li><li>$\vec{\chi}$: error distribution over $\ZZ[X]/\langle \Phi_m \rangle$ such that $\prob\left[ \norm{\vec{x}} > B\; :\; \vec{x} \xleftarrow{\chi} \ZZ[X]/\langle \Phi_m \rangle \right] < \epsilon$</li><li>$\bar{\vec{\chi}}$: error distribution over $\ZZ_q[X]/\langle \bar{\Phi}_m \rangle$ computed by sampling $\vec{x} \xleftarrow{\chi} \ZZ[X]/\langle \Phi_m \rangle$ and returning $\vec{x}\; \text{mod}\, q$</li></ul>|
+| **KeyGen**        | <ul> <li>Randomly sample secret polynomial: <br/>$\vec{s}' \xleftarrow{\bar{\chi}} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$</li><li>Set secret-key as the 2-dimensional colum vector $\vec{s} := \begin{pmatrix}1 \\ \vec{s}' \end{pmatrix}$</li><li>Compute public-key as $M \times 2 = n\log(q) \times 2$ matrix<br/>$\vec{p} := \begin{pmatrix}\vec{a}_1\cdot \vec{s} + p\vec{e}_i & {-}\vec{a}_1 \\ \vdots & \vdots \\ \vec{a}_M\cdot \vec{s} + p\vec{e}_M & {-}\vec{a}_M\end{pmatrix} \in \left(\ZZ_q[X]/\langle \bar{\Phi}_m\rangle\right)^{M\times 2}$<br/>where $\vec{a}_i \xleftarrow{\$} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$ and $\vec{e}_i \xleftarrow{\bar{\chi}} \ZZ_q[X]/ \langle \bar{\Phi}_m \rangle$ </li></ul> |
+| **Encryption**    | <ul><li>Sample $\vec{r} \xleftarrow{\$} \{0, 1\} \subseteq \ZZ^M$, i.e., a random $M = n\log(q)$ dimensional vector of $0$s and $1$s</li><li>Compute $\vec{c} = \enc(m, \vec{p}) := \vec{p}^T\cdot \vec{r} + \begin{pmatrix} m \\ 0\end{pmatrix} \in R_q^2$</li></ul> |
+| **Decryption**    | <ul><li>$\dec(\vec{s}, \vec{c}) = \lift{\inner{\vec{c}}{\vec{s}}}_q\;(\text{mod}\,p)$</li></ul>|
 
 ## Homomorphic Operations
 
