@@ -39,7 +39,7 @@ window.MathJax = {
         dec     : ["\\operatorname\{dec\}"],
         eval    : ["\\operatorname\{eval\}"],
         setup   : ["\\operatorname\{setup\}"],
-        concat  : ["\\doubleplus"],
+        concat  : ["\\unicode{0x29fa}"],
         ffrac   : ["\\left\\lfloor\\frac\{#1\}\{#2\}\\right\\rfloor", 2],
         cfrac   : ["\\left\\lceil\\frac\{#1\}\{#2\}\\right\\rceil", 2],
         roundfrac : ["\\left\\lfloor\\frac\{#1\}\{#2\}\\right\\rceil", 2],

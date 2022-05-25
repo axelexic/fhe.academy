@@ -374,7 +374,7 @@ $$
     \psi_2 \concat {-\vec{d}_2} \\
     \cdots \\
     \psi_n \concat {-\vec{d}_n} \\
-  \end{pmatrix} \in Rq^{(n+1)\times (m+1)}.
+  \end{pmatrix} \in R_q^{(n+1)\times (m+1)}.
 $$
 
 One can verify that

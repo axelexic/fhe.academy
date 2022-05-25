@@ -37,8 +37,8 @@ $$
 \begin{aligned}
 \lift{\cdot}_m &: \ZZ_m \rightarrow \ZZ \\
 \lift{x}_m &= \begin{cases}
-y & \text{where}\, y \in \{x + m\ZZ\} \wedge (0 \leq y < \frac{m}{2}) \\
-y - m  & \text{where}\, y \in \{x + m\ZZ\} \wedge (\frac{m}{2} \leq y < m)
+y & \text{if}\, y \in \{x + m\ZZ\} \wedge (0 \leq y < \frac{m}{2}) \\
+y - m  & \text{if}\, y \in \{x + m\ZZ\} \wedge (\frac{m}{2} \leq y < m)
 \end{cases}
 \end{aligned}
 $$
@@ -51,7 +51,7 @@ $$
 \lift{11}_7 = 4 - 7 = -3 \in \ZZ
 $$
 
-since $y = (4 \in 11 + 7\ZZ) \wedge (\frac{7}{2} \leq y < 3)$.
+since $y = (4 \in 11 + 7\ZZ) \wedge (\frac{7}{2} \leq y < 7)$.
 
 $\mathftr$
 
@@ -277,7 +277,7 @@ denote the norm of $\vec{y}$ by $\norm{\vec{y}}$. For any $\vec{y}
 $$
   \begin{aligned}
   \norm{\cdot} &: \ZZ[Y]\large /\langle \Phi_m(Y)\rangle \rightarrow
-  \ZZ_(\ge 0) \\
+  \ZZ_{\ge 0} \\
   \norm{\sum_0^{m-1} a_iY^i} &= \max\{\norm{a_0}, \norm{a_1},
   \cdots, \norm{a_{m-1}} \}
   \end{aligned}
@@ -298,7 +298,7 @@ with high probability.
 
 Recall that under _decisional Ring-LWE assumption_, one is given two
 oracles $\Xi$ and $\Gamma$, both of which produce samples of the
-form $(\vec{a}_i(X), \vec{b}_i(X)) \in R_q^n\times R_q$. In both
+form $(\vec{a}_i(X), \vec{b}_i(X)) \in R_q\times R_q$. In both
 $\Xi$ and $\Gamma$, $\vec{a}_i(X)$ is sampled uniformly at random,
 but $\vec{b}_i(X)$ is computed differently as
 
@@ -330,7 +330,7 @@ permutation over the elements of the ring. Therefore, if $\rho
 adversary), then for all $x, y_1, y_2 \in R_q$, $\prob[x + \rho =
 y_1]$ $= \prob[y_1 - x = \rho]$ $= \frac{1}{|R_q|}$ $= \prob[x +
 \rho = y_2]$. This proof can be made more precise using hybrid
-argument, but don't need it.
+argument, but we don't need it.
 
 In the context of Ring-LWE, for plaintext $m \in [[p]] \subseteq \ZZ$,
 secret key $\vec{s} \xleftarrow{\$} R_q$, and error $\vec{e}
@@ -361,8 +361,8 @@ Note that the decryption process computes $\vec{b}
 -\vec{a}\cdot\vec{s} \in \ZZ[X]/\langle \Phi_m, q \rangle$ and lifts
 it to $\ZZ[X]/\langle \Phi_m \rangle$. Usually a modulo reduction
 from $\ZZ \mapsto \ZZ_q$ followed by a lift from $\ZZ_q \mapsto \ZZ$
-is not an identity operation. However, since $p|\vec{e}| \ll q$ with
-high probability, $|p\vec{e} + m|$ $\leq (|p\vec{e}| + p) \ll q$.
+is not an identity operation. However, with
+high probability, $p|\vec{e}| \ll q \implies |p\vec{e} + m|$ $\leq (|p\vec{e}| + p) \ll q$.
 Therefore, $\lift{\vec{b} -\vec{a}\cdot\vec{s}}_q$ $= \lift{p\cdot
 \vec{e}
 + m}_q \stackrel{\small{\textsf{whp}}}{=} p\cdot \vec{e} + m$, and
@@ -451,11 +451,13 @@ summarize the encryption scheme in the normalized format below:
 |               |  Description |
 | --------------|--------------------------------------------------|
 | **Setup**     | $\lambda$ := Security parameter <br/><ul><li>$m=O(\lambda)$ $m$-th cyclotomic polynomial</li><li>$n=\phi(m)$ Lattice dimension</li><li>$q=\tilde{O}(n)$ ciphertext modulus</li><li>$p=O(n)$ plaintext modulus</li><li>$B=O(n)$ error spread satisfying $B\cdot p \ll q$</li><li>$M := n\log(q)$</li><li> $R := \ZZ[Y]/\langle \Phi_m \rangle$</li><li>$R_q := \ZZ_q[X]\langle \bar{\Phi}_m \rangle$, where $\bar{\Phi}_m := \Phi_m\;\text{mod}\,q$</li><li>$\vec{\chi}$: error distribution over $\ZZ[X]/\langle \Phi_m \rangle$ such that $\prob\left[ \norm{\vec{x}} > B\; :\; \vec{x} \xleftarrow{\chi} \ZZ[X]/\langle \Phi_m \rangle \right] < \epsilon$</li><li>$\bar{\vec{\chi}}$: error distribution over $\ZZ_q[X]/\langle \bar{\Phi}_m \rangle$ computed by sampling $\vec{x} \xleftarrow{\chi} \ZZ[X]/\langle \Phi_m \rangle$ and returning $\vec{x}\; \text{mod}\, q$</li></ul>|
-| **KeyGen**        | <ul> <li>Randomly sample secret polynomial: <br/>$\vec{s}' \xleftarrow{\bar{\chi}} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$</li><li>Set secret-key as the 2-dimensional colum vector $\vec{s} := \begin{pmatrix}1 \\ \vec{s}' \end{pmatrix}$</li><li>Compute public-key as $M \times 2 = n\log(q) \times 2$ matrix<br/>$\vec{p} := \begin{pmatrix}\vec{a}_1\cdot \vec{s} + p\vec{e}_i & {-}\vec{a}_1 \\ \vdots & \vdots \\ \vec{a}_M\cdot \vec{s} + p\vec{e}_M & {-}\vec{a}_M\end{pmatrix} \in \left(\ZZ_q[X]/\langle \bar{\Phi}_m\rangle\right)^{M\times 2}$<br/>where $\vec{a}_i \xleftarrow{\$} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$ and $\vec{e}_i \xleftarrow{\bar{\chi}} \ZZ_q[X]/ \langle \bar{\Phi}_m \rangle$ </li></ul> |
-| **Encryption**    | <ul><li>Sample $\vec{r} \xleftarrow{\$} \{0, 1\} \subseteq \ZZ^M$, i.e., a random $M = n\log(q)$ dimensional vector of $0$s and $1$s</li><li>Compute $\vec{c} = \enc(m, \vec{p}) := \vec{p}^T\cdot \vec{r} + \begin{pmatrix} m \\ 0\end{pmatrix} \in R_q^2$</li></ul> |
+| **KeyGen**        | <ul> <li>Randomly sample secret polynomial: <br/>$\vec{s}' \xleftarrow{\bar{\chi}} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$</li><li>Set secret-key as the 2-dimensional column vector $\vec{s} := \begin{pmatrix}1 \\ \vec{s}' \end{pmatrix}$</li><li>Compute public-key as $M \times 2 = n\log(q) \times 2$ matrix<br/>$\vec{p} := \begin{pmatrix}\vec{a}_1\cdot \vec{s} + p\vec{e}_i & {-}\vec{a}_1 \\ \vdots & \vdots \\ \vec{a}_M\cdot \vec{s} + p\vec{e}_M & {-}\vec{a}_M\end{pmatrix} \in \left(\ZZ_q[X]/\langle \bar{\Phi}_m\rangle\right)^{M\times 2}$<br/>where $\vec{a}_i \xleftarrow{\$} \ZZ_q[X]/\langle \bar{\Phi}_m \rangle$ and $\vec{e}_i \xleftarrow{\bar{\chi}} \ZZ_q[X]/ \langle \bar{\Phi}_m \rangle$ </li></ul> |
+| **Encryption**    | <ul><li>Sample $\vec{r} \xleftarrow{\$} \{0, 1\} \subseteq \ZZ^M$, i.e., a random $n\log(q)$ dimensional vector of $0$s and $1$s</li><li>Compute $\vec{c} = \enc(m, \vec{p}) := \vec{p}^T\cdot \vec{r} + \begin{pmatrix} m \\ 0\end{pmatrix} \in R_q^2$</li></ul> |
 | **Decryption**    | <ul><li>$\dec(\vec{s}, \vec{c}) = \lift{\inner{\vec{c}}{\vec{s}}}_q\;(\text{mod}\,p)$</li></ul>|
 
 ## Homomorphic Operations
+
+
 
 [^BGV]: Z. Brakerski, C. Gentry and V. Vaikuntanathan,
   [(Leveled) Fully homomorphic encryption without bootstrapping](https://ia.cr/2011/277).
