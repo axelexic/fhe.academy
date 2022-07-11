@@ -49,6 +49,6 @@ nav:
     - 'Appendix':
         - 'SVP to LWE Reduction' : 'appendix/svp2lwe.md'
         - 'Glossary' : 'appendix/glossary.md'
-
+        - 'Bootstrapping' : 'appendix/bootstrapping.md'
     - About:
         - 'License': 'license.md'
