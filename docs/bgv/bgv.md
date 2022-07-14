@@ -622,9 +622,94 @@ m_2\vec{e}_1} \\
 \end{aligned}
 $$
 
-There are two *practical* problems with this ciphertext: First that
-the ciphertext dimension is twice that of the original
-dimension[^double-diemnsion], and second the noise
+There are two *practical* problems with this ciphertext: First,
+the ciphertext dimension doubles[^double-diemnsion] with every
+mulitplication, and second, the noise term gets multiplied by the
+$p$.
+
+As discussed in the [learning without
+errors](fhe-from-tensoring.md#relinearization) settings, the trick
+to change the cipher text dimension from $n$ to $m$ is to:
+
+1. First, sample a new secret-key $\vec{t} \in R_q^{m}$ uniformly at
+   random and use this new key to publish "encryptions" of each
+   component of the old key $\vec{s}$.
+
+2. Use the encryptions of the old key and the old ciphertext to
+   generate a ciphertext that preserves the inner-product invariant.
+
+We proceed with the strategy we used in the [learning without
+errors](fhe-from-tensoring.md#relinearization) setting, but add the
+error terms to make the scheme secure, and also understand new
+problems it creates.
+
+Suppose $\bar{\vec{s}} = \begin{bmatrix} 1 & s_1 & \cdots & s_n
+\end{bmatrix} \in R_q^{n+1}$ is the normalized secret key and
+$\vec{c} \in R_q^{n+1}$ is the corresponding ciphertext. Let
+$\vec{t} \in R_q^m$ be the new raw secret-key (i.e., $\vec{t}$ does
+not have $1$ concatenated to it). Then the first pre-processing step
+(which must be carried out at the time of key-generation) is to
+compute encryptions of $s_i$ using the new key $\vec{t} \in R_q^m$,
+i.e., compute $n+1$ ciphertexts
+
+$$
+  \begin{aligned}
+  \psi_0 &= \inner{\vec{d}_0}{\vec{t}} + 1   + p\vec{e}_0\\
+  \psi_1 &= \inner{\vec{d}_1}{\vec{t}} + s_1 + p\vec{e}_1\\
+  \psi_2 &= \inner{\vec{d}_2}{\vec{t}} + s_2 + p\vec{e}_2\\
+  &\cdots \\
+  \psi_n &= \inner{\vec{d}_n}{\vec{t}} + s_n + p\vec{e}_n\\
+  \end{aligned}
+$$
+
+where $\vec{d}_i \in R_q^{m}$ and $\vec{e}_i \xleftarrow{\bar{\chi}} R_q$.
+These $n+1$ ciphertexts and the corresponding $\vec{d}_i$s can be
+represented as normalized ciphertexts in an $(n+1) \times (m+1)$
+matrix $\mathbf{B}$ called relinearization matrix:
+
+$$
+  \mathbf{B} := \begin{pmatrix}
+    \psi_0 \concat {-\vec{d}_0} \\
+    \psi_1 \concat {-\vec{d}_1} \\
+    \psi_2 \concat {-\vec{d}_2} \\
+    \cdots \\
+    \psi_n \concat {-\vec{d}_n} \\
+  \end{pmatrix} \in R_q^{(n+1)\times (m+1)}.
+$$
+
+If $\vec{\xi} = \begin{bmatrix} \vec{e}_0 & \cdots & \vec{e}_n
+\end{bmatrix}$, then
+
+$$
+\begin{equation}
+\begin{aligned}
+\bar{\vec{s}} &= \mathbf{B}\cdot \bar{\vec{t}} - \vec{\xi}
+\end{aligned}
+\label{bgv:key-transformation}
+\end{equation}
+$$
+
+Assuming all vectors are represented as column vectors, for the
+ciphertext $\vec{c}$, encrypted under secret-key $\bar{\vec{s}}$,
+the following holds:
+
+$$
+  \begin{aligned}
+  p\cdot e + m = \inner{\vec{c}}{\bar{\vec{s}}} &= \inner{\vec{c}}{\left(\mathbf{B}\cdot
+  \bar{\vec{t}} - \xi \right)} &
+  (\text{by}\;\ref{bgv:key-transformation})\\
+  &= \inner{\vec{c}}{\mathbf{B}\cdot \bar{\vec{t}}} -
+  \inner{\vec{c}}{\xi} & (\text{by bi-linearity}) \\
+  & \implies & \\
+  p\cdot e + m + \inner{\vec{c}}{\xi} &= \inner{\mathbf{B}^T\cdot \vec{c}}{\bar{\vec{t}}} &
+  \end{aligned}
+$$
+
+Therefore, $\mathbf{B}^T\cdot \vec{c}$ is a valid, _decryptable_
+ciphertext for message $m$ -- encrypted under a different secret-key
+$\bar{\vec{t}}$ of arbitrary dimension -- provided
+$\norm{\inner{\vec{c}}{\xi} + p\cdot e} \ll q$.
+
 
 [^double-diemnsion]: You may be wondering why doesn't this
   exponential growth in ciphertext size invalidate the compactness
