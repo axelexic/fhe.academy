@@ -629,6 +629,7 @@ the ciphertext dimension doubles[^double-diemnsion] with every
 mulitplication, and second, the noise term gets multiplied by the
 $p$.
 
+#### Relinearization
 As discussed in the [learning without
 errors](fhe-from-tensoring.md#relinearization) settings, the trick
 to change the cipher text dimension from $n$ to $m$ is to:
@@ -706,10 +707,41 @@ $$
 $$
 
 Therefore, $\mathbf{B}^T\cdot \vec{c}$ is a valid, _decryptable_
-ciphertext for message $m_1m_2$ -- encrypted under a different secret-key
-$\bar{\vec{t}}$ of arbitrary dimension -- provided
-$\norm{\inner{\vec{c}_3}{\xi} + p\cdot e} \ll q$.
+ciphertext for message $m_1m_2$ -- encrypted under a different
+secret-key $\bar{\vec{t}}$ of arbitrary dimension -- provided
+$\norm{\inner{\vec{c}_3}{\xi} + p\cdot e} \ll q$. So when is
+$\norm{\inner{\vec{c}_3}{\xi} + p\cdot e} \ll q$? Well, never!
 
+The reason $\norm{\inner{\vec{c}_3}{\xi} + p\cdot e}$ is never small
+because the ciphertext $\vec{c}_3$ has large coefficients and
+therefore $\inner{\vec{c}_3}{\xi}$ is usually the same size as $q$.
+Therefore, directly applying relinearization does not work.
+
+#### Bit Decomposition
+
+For relinearization to work, the coefficients of $\vec{c}_3$ must be
+small. BGV once again exploits the bi-linearity of inner product to
+transform the ciphertext and the secret key to have small ciphertext
+coefficients.
+
+Since
+
+$$
+\inner{\vec{c}}{\vec{\bar{s}}} = \sum_j c_j\cdot
+s_j = \sum_j \sum_{k=0}^{\log_p(q)} \frac{c_j}{p^k}\cdot (p^ks_j)
+$$
+
+if one decomposes the ciphertext coefficients in it's $p$-adic "bit"
+representation at the expense of $\log_p(q)$ time dimension
+expansion, then the coefficients of $c$ can be made small. In this
+representation, the secret also gets multiplied by powers of $p$,
+and the intermediate key $\vec{t}$ in the relinearization step must
+also get have it's dimension updated.
+
+Since rest of the algebra of relinearization doesn't change,
+relinearization effectively addresses the noise growth.
+
+### Modulus Switching
 
 [^double-diemnsion]: You may be wondering why doesn't this
   exponential growth in ciphertext size invalidate the compactness
