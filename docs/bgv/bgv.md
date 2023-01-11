@@ -9,33 +9,35 @@ number of input parameters (a.k.a wires), output parameters and
 intermediate gates. For example, a (combinational) circuit designed
 to run a SQL query over a database of 10,000 records will not be
 able to handle a database with 10,001 records! For that, one will
-need a _new circuit_ that can handle 10,001 input wires! Ideally,
-one would like an FHE scheme where the ciphertexts (and the FHE
-parameters associated with that ciphertext) to be independent of the
+need a _new circuit_ that can handle 10,001 input "wires"! Ideally,
+one would like an FHE scheme where the ciphertexts and the FHE
+parameters associated with that ciphertext are independent of the
 circuit being evaluated. Gentry, in his original Ph.D. thesis
 defined a generic technique called bootstrapping that decouples the
 size of the ciphertext from the size of the circuit. The basic idea
 is to fix the FHE scheme's parameters in such a way that the scheme
 can correctly evaluate its own decryption circuit plus at least one
-more multiplication and addition gate. Further details about
+more multiplication and addition. Further details about
 bootstrapping can be found in the
 [Appendix](../appendix/bootstrapping.md).
 
-Bootstrapping however comes at a severe computational cost. A
+Bootstrapping however comes at a severe computational cost since
+each multiplication must be followed by bootstrapping operations. A
 somewhat cheaper option is to fix the maximum depth of the circuit
 and select parameters that only guarantees _correct decryption_ up
-to that depth. (Note: This is only a correctness requirement, the
+to that depth. (Note: This is only a correctness requirement --- the
 security of the system should still be independent of circuit depth.
-In particular, if decryption failure can somehow be turned into a
-partial decryption oracle, then such a scheme cannot be considered
-secure.) Such a scheme is called a **leveled** fully homomorphic
+In particular, if an adversary feeds the ciphertext through a longer
+depth circuit to cause decryption failure and uses decryption
+failure as an oracle to recover plaintext/secret-key, then such a
+scheme cannot be considered secure.) FHE schemes that can handle
+pre-defined circuit depths are called **leveled** fully homomorphic
 encryption scheme.
 
-BGV, is a leveled fully homomorphic encryption scheme. It's
-based on _generalized learning with errors_ problem (which includes
-LWE, Ring-LWE, and module-LWE problem), but in this post, we
-restrict the discussion to Ring-LWE over a power of two cyclotomic
-ring.
+BGV, is a leveled fully homomorphic encryption scheme. It is based
+on _generalized learning with errors_ problem (which includes LWE,
+Ring-LWE, and module-LWE problem), but in this post, we restrict the
+discussion to Ring-LWE over a $2^k$-cyclotomic ring.
 
 ## Notation
 
@@ -643,14 +645,14 @@ errors](fhe-from-tensoring.md#relinearization) setting, but add the
 error terms to make the scheme secure, and also understand new
 problems it creates.
 
-Suppose $\bar{\vec{s}} = \begin{bmatrix} 1 & s_1 & \cdots & s_n
-\end{bmatrix} \in R_q^{n+1}$ is the normalized secret key and
-$\vec{c} \in R_q^{n+1}$ is the corresponding ciphertext. Let
-$\vec{t} \in R_q^m$ be the new raw secret-key (i.e., $\vec{t}$ does
-not have $1$ concatenated to it). Then the first pre-processing step
-(which must be carried out at the time of key-generation) is to
-compute encryptions of $s_i$ using the new key $\vec{t} \in R_q^m$,
-i.e., compute $n+1$ ciphertexts
+Suppose $\bar{\vec{s}} \otimes \bar{\vec{s}}= \begin{bmatrix} 1 &
+s_1 & \cdots & s_\ell \end{bmatrix} \in R_q^{\ell+1}$ is the
+normalized secret key and $\vec{c}_3 \in R_q^{\ell+1}$ is the
+corresponding ciphertext $\vec{c}_3$ after computing the tensor
+products. Let $\vec{t} \in R_q^m$ be the new raw secret-key. Then
+the first pre-processing step (which must be carried out at the time
+of key-generation) is to compute encryptions of $s_i$ using the new
+key $\vec{t} \in R_q^m$, i.e., compute $\ell+1$ ciphertexts
 
 $$
   \begin{aligned}
@@ -658,13 +660,13 @@ $$
   \psi_1 &= \inner{\vec{d}_1}{\vec{t}} + s_1 + p\vec{e}_1\\
   \psi_2 &= \inner{\vec{d}_2}{\vec{t}} + s_2 + p\vec{e}_2\\
   &\cdots \\
-  \psi_n &= \inner{\vec{d}_n}{\vec{t}} + s_n + p\vec{e}_n\\
+  \psi_\ell &= \inner{\vec{d}_\ell}{\vec{t}} + s_\ell + p\vec{e}_\ell\\
   \end{aligned}
 $$
 
 where $\vec{d}_i \in R_q^{m}$ and $\vec{e}_i \xleftarrow{\bar{\chi}} R_q$.
-These $n+1$ ciphertexts and the corresponding $\vec{d}_i$s can be
-represented as normalized ciphertexts in an $(n+1) \times (m+1)$
+These $\ell+1$ ciphertexts and the corresponding $\vec{d}_i$s can be
+represented as normalized ciphertexts in an $(\ell+1) \times (m+1)$
 matrix $\mathbf{B}$ called relinearization matrix:
 
 $$
@@ -673,42 +675,40 @@ $$
     \psi_1 \concat {-\vec{d}_1} \\
     \psi_2 \concat {-\vec{d}_2} \\
     \cdots \\
-    \psi_n \concat {-\vec{d}_n} \\
-  \end{pmatrix} \in R_q^{(n+1)\times (m+1)}.
+    \psi_n \concat {-\vec{d}_\ell} \\
+  \end{pmatrix} \in R_q^{(\ell+1)\times (\ell+1)}.
 $$
 
-If $\vec{\xi} = \begin{bmatrix} \vec{e}_0 & \cdots & \vec{e}_n
+If $\vec{\xi} = \begin{bmatrix} \vec{e}_0 & \cdots & \vec{e}_\ell
 \end{bmatrix}$, then
 
 $$
 \begin{equation}
 \begin{aligned}
-\bar{\vec{s}} &= \mathbf{B}\cdot \bar{\vec{t}} - \vec{\xi}
+\bar{\vec{s}} \otimes \bar{\vec{s}} &= \mathbf{B}\cdot \bar{\vec{t}} - \vec{\xi}
 \end{aligned}
 \label{bgv:key-transformation}
 \end{equation}
 $$
 
-Assuming all vectors are represented as column vectors, for the
-ciphertext $\vec{c}$, encrypted under secret-key $\bar{\vec{s}}$,
-the following holds:
+and for the ciphertext $\vec{c}_3$, encrypted under secret-key
+$\bar{\vec{s}}\otimes \bar{\vec{s}}$, the following holds:
 
 $$
   \begin{aligned}
-  p\cdot e + m = \inner{\vec{c}}{\bar{\vec{s}}} &= \inner{\vec{c}}{\left(\mathbf{B}\cdot
-  \bar{\vec{t}} - \xi \right)} &
+  p\cdot\vec{e}_3 + m_1m_2 = \inner{\vec{c}_3}{\bar{\vec{s}}\otimes \bar{\vec{s}}} &= \inner{\vec{c}_3}{\left(\mathbf{B}\cdot  \bar{\vec{t}} - \xi \right)} &
   (\text{by}\;\ref{bgv:key-transformation})\\
-  &= \inner{\vec{c}}{\mathbf{B}\cdot \bar{\vec{t}}} -
-  \inner{\vec{c}}{\xi} & (\text{by bi-linearity}) \\
+  &= \inner{\vec{c}_3}{\mathbf{B}\cdot \bar{\vec{t}}} -
+  \inner{\vec{c}_3}{\xi} & (\text{by bi-linearity}) \\
   & \implies & \\
-  p\cdot e + m + \inner{\vec{c}}{\xi} &= \inner{\mathbf{B}^T\cdot \vec{c}}{\bar{\vec{t}}} &
+  p\cdot \vec{e}_3 + m_1m_2 + \inner{\vec{c}_3}{\xi} &= \inner{\mathbf{B}^T\cdot \vec{c}}{\bar{\vec{t}}} &
   \end{aligned}
 $$
 
 Therefore, $\mathbf{B}^T\cdot \vec{c}$ is a valid, _decryptable_
-ciphertext for message $m$ -- encrypted under a different secret-key
+ciphertext for message $m_1m_2$ -- encrypted under a different secret-key
 $\bar{\vec{t}}$ of arbitrary dimension -- provided
-$\norm{\inner{\vec{c}}{\xi} + p\cdot e} \ll q$.
+$\norm{\inner{\vec{c}_3}{\xi} + p\cdot e} \ll q$.
 
 
 [^double-diemnsion]: You may be wondering why doesn't this

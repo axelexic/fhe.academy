@@ -4,12 +4,13 @@
 Almost all Fully Homomorphic Encryption schemes are based on certain
 hard lattice problems. Since a lattice by definition is a discrete
 additive subgroup of some ring $R$, the primary algebraic structure
-over the ciphertext is usually that of an $R$-module. Because of
-this, there's usually a natural _additive homomorphism_ between
-plaintext and ciphertext in almost all lattice-based encryption
-scheme! Finding _multiplicative homomorphism_ on the other hand
-presents several challenges --- first among them being, "what does
-it even mean to multiply two elements of an $R$-module?"
+over which the ciphertext is usually defined is that of an
+[$R$-module](https://en.wikipedia.org/wiki/Module_(mathematics)).
+Because of this, there's usually a natural _additive homomorphism_
+between the plaintext and the ciphertext! Finding a _multiplicative
+homomorphism_, on the other hand, presents several challenges ---
+starting from: "What does it even mean to multiply two elements of
+an $R$-module?"
 
 Brakersky and Vaikunatanathan in [BV11][^BV11] were the first to
 devise a novel tensor-product based technique that _does not_ by
@@ -37,15 +38,16 @@ is the unknown private-key.
 
 !!! info
 
-    Even though the plaintext $p$ can only have values $0$ or $1$,
-    because of semantic security, there are _numerous valid
-    ciphertexts_ corresponding to the same plaintext $p$. Because of this,
-    we will use the notation $\enc(p)$ to mean the _set_ of all possible
-    ciphertexts for $p$ and $\vec{c} \in \enc(p)$ to mean one
-    concrete value from that entire set.
+    **Notation**: Even though in this setting, the plaintext $p$ can only have
+    values $0$ or $1$, the ciphertext has _numerous valid values_
+    corresponding to the same plaintext $p$. This is essential to
+    ensure semantic security. Because of this, we will use the
+    notation $\enc(p)$ to mean the _set_ of all possible ciphertexts
+    corresponding to the plaintext $p$ and $\vec{c} \in \enc(p)$
+    to mean one concrete value from that entire set.
 
 
-Suppose $\vec{c}_1 := (\vec{a}_1, b_1) \in \enc(p_1)$ and $\vec{c}_2
+Let $\vec{c}_1 := (\vec{a}_1, b_1) \in \enc(p_1)$ and $\vec{c}_2
 := (\vec{a}_2, b_2) \in \enc(p_2)$. The goal of _additive
 homomorphism_ between the plaintext and ciphertext is to compute a
 new piece of data $\vec{c}_3 := (\vec{a}_3, b_3)$ as a function of
@@ -60,13 +62,13 @@ $$
   \end{aligned}
 $$
 
-Notice once again that because of semantic security, there are an
-overwhelming number of ciphertexts of the form $(\vec{a}_3, b_3)$
-that will _correctly_ decrypt to $p_1 + p_2$. What is required of
+Notice that because of semantic security, there are an overwhelming
+number of ciphertexts of the form $(\vec{a}_3, b_3)$ that will
+_correctly_ decrypt to $p_1 + p_2$. What is required of
 $\eval_+(\cdot, \cdot)$ is to find one such representation that is
 entirely dependent on $\vec{c}_1$ and $\vec{c}_2$ and nothing else
-(except maybe fresh _public random coins_, if $\eval_+$ is
-randomized).
+(except, possibly fresh adversary controlled _random coins_, and/or
+the user's public key).
 
 Fortunately, because of the bi-linearity of the inner product
 $\inner{\vec{a}}{\vec{s}}$, finding $\eval_+$ is almost immediate.
@@ -92,14 +94,14 @@ ciphertext for $p_1 + p_2$ --- provided the noise term $e_1 + e_2$
 is not too large. In other words,
 
 $$ \eval_{+}((\vec{a_1},b_1), (\vec{a_2},b_2)) = (\vec{a_1} +
-\vec{a_1}, b_1 + b2) $$
+\vec{a_2}, b_1 + b2) $$
 
 suffices!
 
 ## Multiplicative Homomorphism
 Just like in the case of additive homomorphism, the goal of
 multiplicative homomorphism is: Given $c_1 := (\vec{a}_1, b_1) \in
-\enc(p_1)$ and $c_2 := (\vec{a}_2, b_2) \in \enc(p_2)$, compute a
+\enc(p_1)$ and $c_2 := (\vec{a}_2, b_2) \in \enc(p_2)$, find a
 piece of data $\vec{c}_3 := (\vec{a}_3, b_2)$ such that $\vec{c}_3
 \in \enc(p_1 \cdot p_2)$. In other words, we want to find a publicly
 computable function $\eval_\times(\cdot, \cdot)$ with the following
@@ -262,7 +264,7 @@ To make these ideas concrete, we consider a toy example:
     As discussed before, addition two cipher text is just the addition to two vectors
 
     $$
-    \vec{c}_3 := \eval_+(\vec{c}_1, \vec{c}_2)) = \vec{c}_1 + \vec{c}_2 = \begin{pmatrix}3X^3 + X \\ 2X^2 - 3X + 6 \end{pmatrix}
+    \vec{c}_3 := \eval_+(\vec{c}_1, \vec{c}_2) = \vec{c}_1 + \vec{c}_2 = \begin{pmatrix}3X^3 + X \\ 2X^2 - 3X + 6 \end{pmatrix}
     $$
 
     and we can verify that this decrypts to $p_1 + p_2$ as
@@ -499,8 +501,10 @@ this with an example.
 
     as expected.
 
-## References
 
+
+
+## References
 [^BV11]: Z. Brakerski and V. Vaikuntanathan, [Efficient Fully
 Homomorphic Encryption from (Standard) LWE
 ](https://eprint.iacr.org/2011/344.pdf). In 2011 IEEE 52nd Annual
