@@ -671,6 +671,7 @@ represented as normalized ciphertexts in an $(\ell+1) \times (m+1)$
 matrix $\mathbf{B}$ called relinearization matrix:
 
 $$
+  \begin{equation}
   \mathbf{B} := \begin{pmatrix}
     \psi_0 \concat {-\vec{d}_0} \\
     \psi_1 \concat {-\vec{d}_1} \\
@@ -678,6 +679,8 @@ $$
     \cdots \\
     \psi_n \concat {-\vec{d}_\ell} \\
   \end{pmatrix} \in R_q^{(\ell+1)\times (\ell+1)}.
+  \label{bgv:relinearization-matrix}
+  \end{equation}
 $$
 
 If $\vec{\xi} = \begin{bmatrix} \vec{e}_0 & \cdots & \vec{e}_\ell
@@ -713,9 +716,9 @@ $\norm{\inner{\vec{c}_3}{\xi} + p\cdot e} \ll q$. So when is
 $\norm{\inner{\vec{c}_3}{\xi} + p\cdot e} \ll q$? Well, never!
 
 The reason $\norm{\inner{\vec{c}_3}{\xi} + p\cdot e}$ is never small
-because the ciphertext $\vec{c}_3$ has large coefficients and
-therefore $\inner{\vec{c}_3}{\xi}$ is usually the same size as $q$.
-Therefore, directly applying relinearization does not work.
+is because the ciphertext $\vec{c}_3$ has large coefficients ($O(q)$)
+and therefore $\inner{\vec{c}_3}{\xi}$ is usually the same size as
+$q$. Therefore, directly applying relinearization does not work.
 
 #### Bit Decomposition
 
@@ -731,17 +734,134 @@ $$
 s_j = \sum_j \sum_{k=0}^{\log_p(q)} \frac{c_j}{p^k}\cdot (p^ks_j)
 $$
 
-if one decomposes the ciphertext coefficients in it's $p$-adic "bit"
-representation at the expense of $\log_p(q)$ time dimension
-expansion, then the coefficients of $c$ can be made small. In this
-representation, the secret also gets multiplied by powers of $p$,
-and the intermediate key $\vec{t}$ in the relinearization step must
-also get have it's dimension updated.
+if we write $\vec{c}$ as a dimension $n\times\ceil{\log_p(q)}$
+matrix where each column is a component of base-$p$ representation,
+and write $\vec{\bar{s}}$ as a dimension $n\times\ceil{\log_p(q)}$
+matrix where each column is multiplied by an appropriate power of
+$p$, then the inner product of these matrices, is the same as the
+inner product $\inner{\vec{c}}{\vec{\bar{s}}}$.
 
-Since rest of the algebra of relinearization doesn't change,
-relinearization effectively addresses the noise growth.
+More concretely, if
+
+$$
+\vec{c} = \sum_{k=0}^{\floor{\log_p(q)}} c_k\cdot p^k \in R^{n};\quad c_k \in \left(\lift{R/\langle p \rangle}_q\right) ^n
+$$
+
+then, we define
+
+$$
+  \mathbf{C} := [c_0,c_1,c_2,\cdots, p^{\floor{\log_p(q)}}] \in R_q^{n\times \ceil{\log_p(q)}}
+$$
+
+and
+
+$$
+  \begin{align*}
+  \mathbf{S} &:= [\bar{\vec{s}},p\bar{\vec{s}},p^2\bar{\vec{s}},\cdots, p^{\floor{\log_p(q)}}\bar{\vec{s}}]  \in R_q^{n\times \ceil{\log_p(q)}} \\
+    &= \vec{s} \cdot \begin{pmatrix} 1 & p & p^2 & \cdots & p^\floor{\log_p(q)}\end{pmatrix} =: \vec{s} \cdot \vec{P}^T
+  \end{align*}
+$$
+
+where $\vec{P}$ is the column vector of powers of $p$. Then, the inner product of $\mathbf{C}$ and $\mathbf{S}$ is defined as
+
+$$
+\begin{align*}
+\inner{\mathbf{C}}{\mathbf{S}} &:= \text{tr}_q (\mathbf{S}^T \mathbf{C}) \\
+  & = \text{tr}_q \left( (\vec{s} \cdot \vec{P}^T) \right )^T \mathbf{C} \\
+  & = \text{tr}_q \left( \vec{P} \cdot \vec{s}^T  \mathbf{C} \right)      \\
+  &= \sum_k p^k \inner{\vec{s}}{c_k} \\
+  &= \inner{s}{\sum_k p^k \cdot c_k} \\
+  &= \inner{\vec{c}}{\vec{s}}
+\end{align*}
+$$
+
+Therefore, the new relinearization step is as follows:
+
+1. Instead of encrypting each component of secret key $\vec{s}$ with
+   a new key $\vec{t}$, encrypt each component of the key matrix
+   $\mathbf{S}$. This matrix is the new analog of relinearization
+   matrix $\mathbf{B}$ defined in
+   Eq-$\ref{bgv:relinearization-matrix}$). The size of the new
+   relinearization matrix is bigger by a _factor_ of
+   $\ceil{\log_p(q)}$ -- which can be significant if $q$ is large.
+
+2. To perform relinearization, given the ciphertext $\vec{c}$, do a
+   base $p$ decomposition of $\vec{c}$ and compute the new inner
+   product of the bit-decomposed cipher text. Since the cipher text
+   now has small coefficients, which range in both positive and
+   negative value, the inner product $\inner{\vec{C}}{\xi}$ is small
+   compared to $\inner{\vec{c}}{\xi}$.
+
+
+The following example demonstrates this situation
+
+???+ example
+
+    As before, we will work with $m = 8, q = 1024, p = 8$ and
+    $B = 20$ where the Ring-LWE samples are taken from
+    $\ZZ[X]/\langle X^4 + 1\rangle$. We choose the standard deviation
+    of $\chi$ to be $2$.
+
+    #### Key Generation and Pre-computation
+
+    Using sagemath, the following secret keys are generated
+
+    $$
+    \begin{align*}
+    \vec{s} &= 3X^3 - 2X^2 + 2X + 1 \\
+    \vec{t} &= X^3 + X^2 + 2
+    \end{align*}
+    $$
+
+    Since $q = 1024$ and $p = 8$, $\floor{\log_8(1024)} = 3$. Therefore
+
+    $$
+      \mathbf{S} := \begin{pmatrix} 1 & 8 & 64 & 512 \\
+                      \vec{s} & 8\vec{s} & 64\vec{s} & 512 \vec{s}
+                    \end{pmatrix}
+    $$
+
+    To compute the relinearization matrix, we will serialize
+    $\mathbb{S}$ into a column vector as
+
+    $$
+      \mathbf{S}' := \begin{pmatrix} 1 \\
+                      \vec{s} \\
+                      8 \\
+                      8\vec{s} \\
+                      16 \\
+                      16\vec{s} \\
+                      32 \\
+                      32\vec{s} \\
+                    \end{pmatrix}
+    $$
+
+    and compute $\mathbf{B}$ normally.
 
 ### Modulus Switching
+
+Suppose $\vec{c}$ is a valid encryption of $m$ under the secret key
+$\vec{s}$ modulo $q$. Furthermore, suppose the secret key $\vec{s}$
+is also drawn from the error distribution. Then, for all
+integers $q'$,
+
+$$
+  \inner{\frac{q'}{q}\vec{c}}{\bar{\vec{s}}} = \frac{q'}{q}\inner{\vec{c}}{\bar{\vec{s}}} = m\frac{q'}{q} + pe\frac{q'}{q}
+$$
+
+In other words, scaling the ciphertext alone scales the message and
+the _error term_ by the same ratio. Furthermore, if one ensures that
+the rounding $\lfloor\frac{q'}{q}\rceil\vec{c}$  is done in such a
+way that $\lfloor\frac{q'}{q}\rceil\vec{c} \equiv \vec{c} \mod p$,
+then it will preserve that plaintext message.
+
+This process of scaling the ciphertext to generated a new ciphertext
+that has scaled down error term is called modulus switching.
+**Warning**: While the cipher text is getting scaled down, it's
+crucial to enforce the requirement to round the vector such that
+$\lfloor\frac{q'}{q}\rceil\vec{c} \equiv \vec{c} \mod p$. With this,
+the ciphertext will not decrypt correctly.
+
 
 [^double-diemnsion]: You may be wondering why doesn't this
   exponential growth in ciphertext size invalidate the compactness
